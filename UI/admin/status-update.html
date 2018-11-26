@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>Update Status - iReporter</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, scale=1">
+	<link rel="stylesheet" type="text/css" href="../css/styles.css">
+</head>
+
+<body>
+	<header class="header">
+		<div class="container top-nav">
+			<nav>
+				<ul class="header-nav nav-links">
+					<li><a href="home.html">Home</a></li>
+					<li><a href="admin-update.html">Manage Records</a></li>
+					<li><a href="stats.html">Stats</a></li>
+					<li><a href="profile.html">Profile</a></li>
+					<li><a href="create-record.html" class="tagged btn-nav">Add Record</a></li>
+					<li><a href="#">Sign out</a></li>
+				</ul>
+			</nav>
+			<a href="index.html" class="logo">
+				iReporter
+			</a>
+		</div>
+	</header>
+
+	<section class="status-update-section">
+		<div class="container">
+
+			<div class="record-item">
+				<h2>Update the status of the record</h2>
+				
+				<form action="/" method="post">
+					<ul class="form-style">
+
+						<li>
+					        <label>Status</label>
+					        <select name="record-status" class="field-select">
+						        <option value="resolved">Resolved</option>
+					        	<option value="unresolved">Unresolved</option>
+					        	<option value="rejected">Rejected</option>
+					        </select>
+					    </li>
+
+					    
+					    <li>
+					        <input type="submit" value="Submit" />
+					    </li>
+					    <li>
+					    	<a href="admin-update.html">Cancel</a>
+					    </li>
+					    
+					</ul>
+				</form>
+
+			</div>
+
+		</div>
+	</section>
+
+	<footer class="footer">
+	  <div class="container">
+	    <p>&copy; 2018 iReporter.</p>
+	  </div>
+	</footer>
+
+</body>
+
+</html>
