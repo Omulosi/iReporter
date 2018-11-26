@@ -828,3 +828,13 @@ select{
   display: block;
   text-align: center;
 }
+
+/* HOME SECTION STYLES */
+.home-section {
+  flex: 1;
+}
+
+.home-section .feed-footer .edit,
+.home-section .feed-footer .delete {
+  display: none;
+}
