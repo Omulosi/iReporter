@@ -307,3 +307,262 @@ body {
   line-height: 1.7;
   text-align:center;
 }
+
+
+/* DASHBOARD STYLES */
+
+.btn-nav {
+  background-color: #3eb060;
+  color: #fff;
+  text-decoration: none;
+  color: #fff;
+  padding: 3px 7px 4px;
+  border-radius: 3px;
+  transition: background-color 0.5s;
+}
+
+.dashboard{
+  height: 90vh;
+  text-align: center;
+  background: #fafafa;
+}
+
+/* USER PROFILE STYLES*/
+
+.user-content {
+  flex: 1;
+}
+
+.profile-photo {
+  border-radius: 50%;
+  width: 142px;
+  margin-right: 2.1em;
+}
+
+.profile-header table td {
+  vertical-align: bottom;
+}
+.profile-header {
+  min-height: 20vh;
+  border-bottom: 2px solid #c2c2c2;
+  padding-bottom: 1em;
+  position: relative;
+}
+
+.profile-header h1 {
+  font-weight: bold;
+  color: #333;
+  line-height: 1.3;
+  font-size: 2.2em;
+  margin-top: 1em;
+}
+
+
+.profile-header .tag-line {
+    color: #333;
+    font-size: 1.1em;
+    margin-top: 0.5em;
+}
+
+.followers {
+  color: #888;
+  font-style: italic;
+  margin-top: 0.5em;
+}
+
+.edit-profile {
+  margin-top: 0.4em;
+}
+
+.edit-profile a{
+  color: #888;
+  text-decoration: none;
+  
+}
+
+.edit-profile a:hover{
+  border-bottom: 1px solid #888;
+}
+
+
+/* FEED STYLES */
+.feed-header {
+  border-bottom: 1px solid #e2e2e2;
+  padding: 18px 5px 10px;
+  position: relative;
+  overflow: hidden;
+}
+
+.list-header{
+  font-size: 1.2em;
+}
+
+.feed-header .feed-tags {
+  float: right;
+}
+
+
+.feed-body {
+  width: 100%;
+  margin-top: 2em;
+}
+
+.feed-item {
+    margin-bottom: 1em;
+    border: 1px solid #efefef;
+    background-color: #fff;
+    border-radius: 4px;
+    border-bottom: 1px solid #e2e2e2;
+    padding: 16px;
+
+  }
+
+.feed-item table td {
+  vertical-align: top;
+}
+
+.user-photo {
+  border-radius: 50%;
+  width: 40px;
+}
+
+.user {
+  padding-left: 0.5em;
+}
+
+.user a {
+  text-decoration: none;
+  color: rgb(51, 51, 51);
+  font-weight: bold;
+  line-height: 1.4;
+  font-size: 1.2em;
+}
+
+.user p {
+  color: #888;
+}
+
+.feed-item-header {
+  border-bottom: 1px solid #e2e2e2;
+}
+
+.feed-item-header h3 {
+  font-weight: bold;
+  position: relative;
+}
+
+.feed-item-header .title span ~ span {
+  border-left: 1px solid #a2a2a2;
+  padding-left: 5px;
+  
+}
+
+.title span {
+  padding: 5px;
+}
+
+.title .record {
+  color: #f32;
+}
+.status {
+  text-align: right;
+  position: absolute;
+  top: -15px;
+  color: #666;
+}
+
+
+.poster {
+  padding: 8px;
+}
+
+.poster h2 {
+  font-size: 1.1em;
+  margin-bottom: 6px;
+}
+
+.poster p {
+  font-style: italic;
+  color: #777;
+}
+
+.description {
+  margin-top: 0.4em;
+}
+
+.description p {
+  line-height: 1.4;
+}
+
+.feed-footer {
+  margin-top: 5px;
+  /*border-top: 1px solid #e2e2e2;*/
+  padding-top: 1em;
+}
+
+.feed-tags ul {
+  list-style: none;
+}
+
+.feed-tags li {
+  display: inline-block;
+  margin-right: 2em;
+  color: rgb(135, 138, 140);
+  font-weight: bold;
+  padding: 3px 7px;
+}
+
+.feed-tags .red-flag {
+  color: #fff;
+  background: #b92b27;
+}
+
+.feed-tags .intervention {
+  color: #fff;
+  background: #4bb927;
+}
+
+.feed-tags .non-tag:hover {
+  background: rgb(204, 204, 204);
+}
+
+.feed-tags a {
+  text-decoration: none;
+  color: rgb(135, 138, 140);
+}
+
+.feed-footer .resolved {
+  color: #2bb927;
+  
+}
+
+.feed-footer .unresolved {
+  color: #2b27b9;
+}
+
+.feed-footer .rejected {
+  color: #b92b27;
+}
+
+.feeder-nav {
+  margin-top: 2em;
+  margin-bottom: 2em;
+  overflow: hidden;
+}
+
+.feeder-nav-btn {
+  padding: 0.6em 1em;
+  color: #333;
+  border: 1px solid #e2e2e2;
+  border-radius: 3px;
+  text-decoration: none
+}
+
+.shift-right {
+  float: right;
+}
+
+.disabled {
+  cursor: not-allowed;
+}
+
