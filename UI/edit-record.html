@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>Edit Record - iReporter</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, scale=1">
+	<link rel="stylesheet" type="text/css" href="css/styles.css">
+</head>
+
+<body>
+	<header class="header">
+		<div class="container top-nav">
+			<nav>
+				<ul class="header-nav nav-links">
+					<li><a href="#">Home</a></li>
+					<li><a href="stats.html">Stats</a></li>
+					<li><a href="profile.html">Profile</a></li>
+					<li><a href="#" class="tagged btn-nav">Add Record</a></li>
+					<li><a href="#">Sign out</a></li>
+				</ul>
+			</nav>
+			<a href="index.html" class="logo">
+				iReporter
+			</a>
+		</div>
+	</header>
+
+	<section class="edit-record-section">
+		<div class="container">
+			<div class="record-item">
+				<h2>Edit Record</h2>
+				<form action="#" method="post">
+					<ul class="form-style">
+
+						<li>
+					        <label>Type of Record</label>
+					        <select name="record-type" class="field-select">
+					        <option value="red-flag">Red Flag</option>
+					        <option value="intervention">Intervention</option>
+					        
+					        </select>
+					    </li>
+
+					    <li>
+					    	<label>Title</label>
+					        <input type="text" name="title" class="field-long" placeholder="Title" required="" />
+					    </li>
+
+					     <li>
+					    	<label>Geolocation</label>
+					        <input type="text" name="location" class="field-long" placeholder="Latitude, Longitude" required="" />
+					    </li>
+
+					    
+					    <li>
+					        <label>Description</label>
+					        <textarea name="description" class="field-long field-textarea"></textarea>
+					    </li>
+					    <li>
+					        <input type="submit" value="Submit" />
+					    </li>
+					    <li class="">
+							<a href="profile.html">Cancel</a>
+						</li>
+					</ul>
+				</form>
+
+			</div>
+		</div>
+	</section>
+
+
+	<footer class="footer">
+	  <div class="container">
+	    <p>&copy; 2018 iReporter.</p>
+	  </div>
+	</footer>
+
+</body>
+
+</html>
