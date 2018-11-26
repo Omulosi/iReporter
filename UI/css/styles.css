@@ -791,3 +791,40 @@ select{
 .stats-main tbody {
   text-align: right;
 }
+
+
+
+/* ADMIN STYLES */
+
+.feed-footer .status-update {
+  color: #fff;
+  background: #2b27b9;
+}
+
+.feed-footer .status-update a {
+  color: #fff;
+}
+
+.status-update select {
+  font-size: 12px;
+}
+
+.record-status option {
+  font-size: 12px;
+  padding: 5px;
+}
+
+.admin .feed-footer .edit,
+.admin .feed-footer .delete {
+  display: none
+}
+
+
+.status-update-section {
+  flex: 1;
+}
+
+.form-style li > a {
+  display: block;
+  text-align: center;
+}
