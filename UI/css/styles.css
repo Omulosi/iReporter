@@ -1,0 +1,226 @@
+/* RESET */
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center, dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend, table, caption,
+tbody, tbody, thead, tr, th, td, article, aside,
+canvas, details, embed, figure, figcaption, footer,
+header, hgroup, menu, nav, output, ruby, section,
+summary, time, mark, audio, video {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font: inherit;
+  vertical-align: baseline;
+}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure,
+footer, header, hgroup, menu, nav, section {
+  display: block;
+}
+body {
+  line-height: 1;
+}
+blockquote, q {
+  quotes: none;
+}
+blockquote:before, blockquote:after,
+q:before, q:after {
+  content: '';
+  content: none;
+}
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+strong, b {
+  font-weight: bold;
+}
+em, i {
+  font-style: italic;
+}
+a img {
+  border: none;
+}
+/* END RESET*/
+
+/* GLOBAL STYLES */
+
+*, *:after, *:before {
+  box-sizing: border-box;
+}
+
+.container {
+  margin: 0 auto;
+  max-width: 940px;
+  padding: 0 15px;
+}
+
+body {
+  font: sans-serif;
+  background: #fafafa;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* HEADER STYLES */
+
+.header {
+  background-color: #24292e;
+  color: #fff;
+  width: 100%;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: #fff;
+  font-size: 16px;
+}
+
+.nav-links > li {
+  display: inline-block;
+  line-height: 4vh;
+  padding-left: 1.2em;
+}
+
+.header-nav {
+  float: right;
+}
+
+.logo {
+  display: block;
+  color: #fff;
+  font-weight: bold;
+  font-size: 1.7em;
+  display: block;
+  text-decoration: none;
+  line-height: 4vh;
+}
+
+.top-nav {
+  padding: 1.2em 1.5em 1em;
+  height: 10vh;
+}
+
+.nav-links a:hover {
+  color: #ddd;
+}
+
+.logo:hover {
+  color: #ddd;
+}
+
+.tagged {
+  border: 1px solid #d1d5da;
+  border-radius: 4px;
+  padding: 5px 7px;
+}
+
+/* HERO STYLES */
+
+.hero {
+  height: 90vh;
+  text-align: center;
+  background: url('../img/hand-corrupt.jpg') no-repeat center left;
+  background-size: cover;
+}
+
+.hero .container {
+  position: relative;
+  top: 200px;
+}
+
+.hero h1 {
+  color: #fff;
+  font-size: 7.5rem;
+  margin-bottom: 3rem;
+}
+
+.hero h3 {
+  text-transform: uppercase;
+  font-size: 1.2em;
+  color: #fff;
+  letter-spacing: 8px;
+  margin-bottom: 1.9rem;
+}
+
+.btn {
+  background-color: #000;
+  text-decoration: none;
+  color: #fff;
+  padding: 10px 40px;
+  transition: background-color 0.5s;
+}
+
+.btn:hover {
+  background-color: rgba(255, 255, 255, 0.75);
+  color: #000;
+  cursor: pointer;
+}
+
+/* MAIN STYLES */
+.main {
+  padding-bottom: 100px;
+}
+
+.main img {
+  height: 200px;
+  float: left;
+  margin: 50px 80px 80px 0;
+}
+
+.main h2 {
+  font-weight: bold;
+  font-size: 1.8em;
+  margin-top: 100px;
+}
+
+.main p {
+  font-size: 1.1em;
+  margin: 15px;
+  line-height: 20px;
+}
+
+/* JUMBOTRON */
+.jumbotron {
+  background: url('../img/bribery.jpg') no-repeat center left;
+  background-size: cover;
+  height: 600px;
+}
+
+.jumbotron .container {
+  position: relative;
+  top: 250px;
+}
+
+.jumbotron h2 {
+  text-align: right;
+  font-size: 1.9em;
+  color: #fff;
+  margin-bottom: 1em;
+}
+
+.jumbotron h3 {
+  color: #fff;
+  font-size: 1.3em;
+  margin-bottom: 1em;
+  text-align: right;
+}
+
+.jumbotron a {
+  float: right;
+}
+
+/* FOOTER STYLES */
+
+.footer {
+  background-color: #000;
+  padding: 40px 0 80px;
+  color: #fff;
+  text-align: center;
+}
+
