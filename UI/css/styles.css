@@ -729,3 +729,65 @@ select{
   display: block;
   text-align: center;
 }
+
+
+/* STATS SECTION STYLES */
+
+.stats-content {
+  flex: 1;
+  margin-top: 2em;
+  margin-bottom: 3em;
+  padding: 2em;
+}
+
+.stats-main {
+  width: 100%;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.stats-main table {
+  border-collapse: separate;
+  border-spacing: 0;
+  color: #4a4a4d;
+  font: sans-serif;
+  font-size: 1.5em;
+}
+.stats-main th,
+.stats-main td {
+  padding: 0.8em 1.2em;
+  vertical-align: middle;
+}
+.stats-main thead {
+  background: #395870;
+  background: linear-gradient(#49708f, #293f50);
+  color: #fff;
+  font-size: 0.8em;
+  text-transform: uppercase;
+}
+
+.stats-main tbody tr:nth-child(even) {
+  background: #f0f0f2;
+}
+.stats-main td {
+  border-bottom: 1px solid #cecfd5;
+  border-right: 1px solid #cecfd5;
+}
+.stats-main td:first-child {
+  border-left: 1px solid #cecfd5;
+}
+.record-title {
+  color: #395870;
+  display: block;
+  font-size: 0.9em;
+}
+
+.resolved,
+.not-resolved,
+.rejected {
+  text-align: center;
+}
+
+.stats-main tbody {
+  text-align: right;
+}
