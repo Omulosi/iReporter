@@ -6,3 +6,6 @@
     retrieving data using classes, lists and dictionaries.
 
 """
+
+class Record(object):
+    pass
