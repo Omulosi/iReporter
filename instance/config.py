@@ -8,3 +8,6 @@
 
 class Config:
     pass
+
+class TestConfig(Config):
+    TESTING = True
