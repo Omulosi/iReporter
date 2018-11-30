@@ -9,14 +9,13 @@
 
 from datetime import datetime
 import copy
-#from flask_restful import fields
 
 class Model:
     """
     Base class for all database objects
     """
     data_id = 0
-    _db = {} # Represents the internal storage structure
+    _db = {} 
 
     def __init__(self):
         self.created = datetime.utcnow()

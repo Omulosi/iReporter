@@ -5,10 +5,10 @@
     Implements API endpoints
 
 """
-
-from flask_restful import Resource, reqparse, abort, url_for
+from flask_restful import Resource, reqparse, url_for
 from . import api_bp
 from .models import Record
+from .errors import raise_error
 
 class RedflagListAPI(Resource):
     """
@@ -27,6 +27,9 @@ class RedflagListAPI(Resource):
         """
         Returns a collection of all red-flag records
         """
+        records = Record.all()
+        if not records:
+            return raise_error(404, "No records exist yet. Create one?")
         output = {'status': 200, 'data': Record.all()}
         return output
 
@@ -57,10 +60,10 @@ class RedflagAPI(Resource):
         """
         record = Record.by_id(_id)
         if not record:
-            abort(404, message="Record does not exist")
+            return raise_error(404, "Record record not found")
         output = {'status': 200,
                   'data': [record.serialize]
-                  }
+                 }
         return output
 
     def delete(self, _id):
@@ -70,7 +73,7 @@ class RedflagAPI(Resource):
 
         record = Record.by_id(_id)
         if not record:
-            abort(404, message="Record does not exist")
+            return raise_error(404, "Record does not exist")
         Record.delete(_id)
         out = {}
         out['status'] = 200
@@ -94,7 +97,7 @@ class RedflagUpdateAPI(Resource):
         data = self.parser.parse_args()
         record = Record.by_id(_id)
         if not record:
-            abort(404, message="Record does not exist")
+            return raise_error(404, "Record does not exist")
         if field == 'location':
             new_location = data.get('location')
             if new_location is not None:
