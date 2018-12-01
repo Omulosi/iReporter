@@ -18,7 +18,6 @@ class RedflagListAPI(Resource):
 
     def __init__(self):
         self.parser = reqparse.RequestParser()
-        self.parser.add_argument('type', type=str, required=True, help='record type not provided')
         self.parser.add_argument('comment', type=str, required=True, help='comment not provided')
         self.parser.add_argument('location', type=str, required=True, help='location not provided')
         super(RedflagListAPI, self).__init__()
@@ -28,8 +27,6 @@ class RedflagListAPI(Resource):
         Returns a collection of all red-flag records
         """
         records = Record.all()
-        if not records:
-            return raise_error(404, "No records exist yet. Create one?")
         output = {'status': 200, 'data': Record.all()}
         return output
 
@@ -38,7 +35,7 @@ class RedflagListAPI(Resource):
         Creates a new red-flag record
         """
         data = self.parser.parse_args() # Dictionary of input data
-        record = Record(_type=data['type'], location=data['location'],
+        record = Record(location=data['location'],
                         comment=data['comment'])
         uri = url_for('v1.redflag', _id=record.data_id, _external=True)
         record.add_field('uri', uri)
@@ -58,8 +55,11 @@ class RedflagAPI(Resource):
         """
         Returns a single red-flag record
         """
+        if not _id.isnumeric():
+            return raise_error(404, "Invalid ID")
+        _id = int(_id)
         record = Record.by_id(_id)
-        if not record:
+        if record is None:
             return raise_error(404, "Record record not found")
         output = {'status': 200,
                   'data': [record.serialize]
@@ -71,8 +71,11 @@ class RedflagAPI(Resource):
         Deletes a red-flag record
         """
 
+        if not _id.isnumeric():
+            return raise_error(404, "Invalid ID")
+        _id = int(_id)
         record = Record.by_id(_id)
-        if not record:
+        if record is None:
             return raise_error(404, "Record does not exist")
         Record.delete(_id)
         out = {}
@@ -94,10 +97,13 @@ class RedflagUpdateAPI(Resource):
         """
         Updates a field of a red-flag record
         """
-        data = self.parser.parse_args()
+        if not _id.isnumeric():
+            return raise_error(404, "Invalid ID")
+        _id = int(_id)
         record = Record.by_id(_id)
-        if not record:
+        if record is None:
             return raise_error(404, "Record does not exist")
+        data = self.parser.parse_args()
         if field == 'location':
             new_location = data.get('location')
             if new_location is not None:
@@ -108,13 +114,13 @@ class RedflagUpdateAPI(Resource):
                 record.comment = new_comment
         Record.put(record)
         output = {}
-        output['status'] = 201
+        output['status'] = 200
         output['data'] = [{"id": _id, "message": "Updated red-flag record's " + field}]
-        return output, 201
+        return output, 200
 #
 # API resource routing
 #
 
 api_bp.add_resource(RedflagListAPI, '/red-flags', endpoint='redflags')
-api_bp.add_resource(RedflagAPI, '/red-flags/<int:_id>', endpoint='redflag')
-api_bp.add_resource(RedflagUpdateAPI, '/red-flags/<int:_id>/<field>', endpoint='update_redflag')
+api_bp.add_resource(RedflagAPI, '/red-flags/<_id>', endpoint='redflag')
+api_bp.add_resource(RedflagUpdateAPI, '/red-flags/<_id>/<field>', endpoint='update_redflag')

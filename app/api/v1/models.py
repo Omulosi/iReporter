@@ -57,6 +57,13 @@ class Model:
             return True
         except KeyError:
             return
+    @classmethod
+    def clear_all(cls):
+        """
+        Removes all items from the database model
+        """
+        cls._db.clear()
+
 
     def add_field(self, field, data):
         """
