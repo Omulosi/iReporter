@@ -8,9 +8,8 @@ install:
         - pip install coveralls
         - pip install codecov
 script:
-        - pytest --cov-report term-missing --cov=app
-        - coveralls
+        - py.test -v --cov-report term-missing --cov app
 after_success:
         - coveralls
-        - codecov --token
+        - codecov --token=9691abd2-7907-439a-97d8-a6266e8827d3
         - codeclimate-test-reporter
