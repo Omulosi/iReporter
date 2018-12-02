@@ -3,6 +3,4 @@ __pycache__
 venv
 *pyc
 *swp
-*coverage*
-coverage.xml
-.coverage
+
