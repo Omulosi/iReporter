@@ -3,7 +3,8 @@ python:
         - "3.5.2"
 install:
         - pip install flask
-        - pip install pytest 
+        - pip install pytest
+        - pip install install pytest-cov 
         - pip install flask_restful
         - pip install coveralls
         - pip install codecov
