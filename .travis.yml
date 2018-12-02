@@ -11,6 +11,6 @@ install:
 script:
         - pytest --cov=./app
 after_success:
-        - codecov --token=9691abd2-7907-439a-97d8-a6266e8827d3
+        - codecov
         - coveralls
         - codeclimate-test-reporter
