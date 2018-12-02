@@ -4,7 +4,7 @@ python:
 install:
         - pip install flask
         - pip install pytest
-        - pip install install pytest-cov 
+        - pip install pytest-cov 
         - pip install flask_restful
         - pip install coveralls
         - pip install codecov
