@@ -19,4 +19,4 @@ deploy:
   api_key: 67e776f2-5750-499d-bd59-ccd8d84b3347
   app: iwhistler
   run: gunicorn run:app
-  on: master
+  on: ch-configure-deploy-file-162371370
