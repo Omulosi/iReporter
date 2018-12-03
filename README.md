@@ -80,9 +80,14 @@ This assumes you have already activated your virtual environment and installed a
 Run the the application from the command line using `flask run` then in another terminal(from the same repo), run the following commands(the commands given are only for illustration purposes):
 
 `$http GET api/v1/red-flags`
+
 `$http POST api/v1/red-flags location='23,34' comment='bribery'`
+
 `$http GET api/v1/red-flags/1`
+
 `$http DELETE api/v1/red-flags`
+
 `$http PATCH api/v1/red-flags/location location='45,34'`
+
 `$http PATCH api/v1/red-flags/comment comment='police brutality'`
     
