@@ -24,6 +24,7 @@ class Model:
     def by_id(cls, item_id):
         """
         Returns an item given an id
+        Assumes item_id is of type int
         """
         return cls._db.get(item_id)
 
@@ -71,44 +72,6 @@ class Model:
         """
         setattr(self, field, data)
 
-
-class User(Model):
-    """
-    Stores all data related to a user
-    """
-
-    def __init__(self, fname, lname, username, othernames=None,
-                 phone_number=None, email=None, is_admin=False):
-        self.fname = fname
-        self.lname = lname
-        self.othernames = "" if othernames is None else othernames
-        self.phone_number = "" if phone_number is None else phone_number
-        self.email = "" if email is None else email
-        self.is_admin = is_admin
-        self.username = username
-        Model.__init__(self)
-        self.data_id = self.data_id + 1
-        User.data_id = self.data_id
-
-    @property
-    def serialize(self):
-        """
-        Returns a dict represention of the data stored in the object
-        """
-        return {
-            'id': self.data_id,
-            'firstname': self.fname,
-            'lastname': self.lname,
-            'othernames': self.othernames,
-            'phoneNumber': self.phone_number,
-            'username': self.username,
-            'email': self.email,
-            'isAdmin': self.is_admin,
-            'created': self.created.strftime('%a, %d %b %Y %H:%M %p'),
-            'uri': self.uri if hasattr(self, 'uri')  else ''
-            }
-
-
 class Record(Model):
     """
     Stores all data related to a record
@@ -122,7 +85,7 @@ class Record(Model):
         self.status = 'Under Investigation' if status is None else status
         self.image = [] if image is None else image
         self.video = [] if video is None else video
-        self.user = user # A database model of type User
+        self.user = user
         Model.__init__(self)
         self.data_id = self.data_id + 1
         Record.data_id = self.data_id
