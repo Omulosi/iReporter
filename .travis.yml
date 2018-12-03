@@ -1,0 +1,15 @@
+language: python
+python:
+        - "3.5.2"
+install:
+        - pip install flask
+        - pip install pytest
+        - pip install flask_restful
+        - pip install coveralls
+        - pip install codecov
+script:
+        - pytest app
+after_success:
+        - coveralls
+        - codecov --token=9691abd2-7907-439a-97d8-a6266e8827d3
+        - codeclimate-test-reporter

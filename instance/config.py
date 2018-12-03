@@ -11,3 +11,4 @@ class Config:
 
 class TestConfig(Config):
     TESTING = True
+    DEBUG = True
