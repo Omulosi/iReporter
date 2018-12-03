@@ -45,6 +45,7 @@ class Model:
         if not isinstance(item, Model):
             raise ValueError('Data item should be a Model object')
         cls._db[item.data_id] = item
+        return True
 
     @classmethod
     def delete(cls, item_id):
