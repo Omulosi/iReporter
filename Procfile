@@ -1,1 +1,1 @@
-web: gunicorn iwhistler.wsgi
+web: gunicorn run:app
