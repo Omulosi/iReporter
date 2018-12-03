@@ -16,7 +16,7 @@ after_success:
         - codeclimate-test-reporter
 deploy:
   provider: heroku
-  api_key: $HEROKU_API_KEY
+  api_key: a188328e-ab8d-4e6e-a688-020661d7bf8d
   app: iwhistler
   run: gunicorn run:app
   on: ch-configure-deploy-file-162371370
