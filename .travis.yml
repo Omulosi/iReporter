@@ -14,3 +14,9 @@ after_success:
         - codecov
         - coveralls
         - codeclimate-test-reporter
+deploy:
+  provider: heroku
+  api_key: 67e776f2-5750-499d-bd59-ccd8d84b3347
+  app: iwhistler
+  run: gunicorn run:app
+  on: master
