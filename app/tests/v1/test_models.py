@@ -69,6 +69,15 @@ class RecordModel(unittest.TestCase):
         self.assertEqual(Record.clear_all(), None)
         self.assertEqual(Record.all(), [])
 
+    def test_all_field_present_at_initialization(self):
+        self.assertEqual(self.r2.data_id, self.r1.data_id + 1)
+        self.assertEqual(self.r1.video, [])
+        self.assertEqual(self.r1.image, [])
+        self.assertEqual(self.r1.type, 'red-flag')
+        self.assertEqual(self.r1.location, "-1, 36")
+        self.assertEqual(self.r1.comment, "Judges soliciting for bribes")
+        self.assertEqual(self.r1.status, "Under Investigation")
+        self.assertEqual(self.r1.user, None)
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
