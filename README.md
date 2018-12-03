@@ -23,21 +23,22 @@ then change to the develop branch
 
 to make sure all the project dependencies are installed, create a virtual enviroment and install the packages there.
 
-* to create a virtual enviroment run
+* to create a virtual enviroment called `venv` run
 
 
     ``` python3 -m venv venv```
-* activating the enviroment
+
+* to activate the enviroment, run
 
     ``` source venv/bin/activate```
 
-then install all packages for our project by runnig the following command
+then install all packages for the project by runnig the following command
 
 ``` pip install -r requirements.txt ```
 
 this assumes pip is already installed
 
-# run 
+# running the app locally 
 To test our project set the following environment variable
 
 ``` export FLASK_APP=run.py```
@@ -65,7 +66,7 @@ record|
 
 The endpoints can be tested using Postman, [HTTPie](https://httpie.org/doc) (a command line http client), or curl.
 
-## Test Using **Postman**
+## Test Using **Postman** (Recommended)
 With the project running locally, use the Postman service to test the endpoints by prepending each endpoint in the table above to the base url `http://127.0.0.1:5000/`
 
 ## Test Using HTTPie
@@ -74,7 +75,9 @@ Install HTTPie client by running
 
 `pip install httpie`
 
-Run the the application from the command line then in another terminal, run the following commands(the commands given are only for illustration purposes):
+This assumes you have already activated your virtual environment and installed all dependencies
+
+Run the the application from the command line using `flask run` then in another terminal(from the same repo), run the following commands(the commands given are only for illustration purposes):
 
 `$http GET api/v1/red-flags`
 `$http POST api/v1/red-flags location='23,34' comment='bribery'`
