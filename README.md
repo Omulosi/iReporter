@@ -46,7 +46,7 @@ then do
 
 ``` flask run ```
 
-on your browser open up `http://127.0.0.1:5000/api/v1/`
+on your browser open up `http://127.0.0.1:5000/api/v1/red-flags`
 
 # Testing the API endpoints 
 
