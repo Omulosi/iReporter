@@ -10,6 +10,18 @@ from . import api_bp
 from .models import Record
 from .errors import raise_error
 
+
+def valid_location(location):
+    try:
+        coords_list_str = location.split(',')
+        assert len(coords_list_str) == 2
+        latitude, longitude = [float(c) for c in coords_list_str]
+        assert -90 < latitude <= 90
+        assert -180 <= longitude <= 180
+        return location
+    except (AssertionError, ValueError):
+        return
+
 class CreateOrReturnRedflags(Resource):
     """
     Implements methods for creating a record and returning a collection
@@ -34,7 +46,12 @@ class CreateOrReturnRedflags(Resource):
         """
         Creates a new red-flag record
         """
-        data = self.parser.parse_args() # Dictionary of input data
+        data = self.parser.parse_args(strict=True) # Dictionary of input data
+        location = data.get('location')
+        comment = data.get('comment')
+        if not location or not comment:
+            return raise_error(400, "Neither location nor comment should be empty")
+        location = valid_location(location)
         record = Record(location=data['location'],
                         comment=data['comment'])
         uri = url_for('v1.redflag', _id=record.data_id, _external=True)
