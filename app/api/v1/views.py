@@ -41,7 +41,7 @@ class CreateOrReturnRedflags(Resource):
         record.add_field('uri', uri)
         Record.put(record)
         output = {'status': 201,
-                  'data': [{"id": record.data_id, "message": "Created a red-flag record"}]
+                  'data': [record.serialize]
                  }
 
         return output, 201, {'Location': uri}

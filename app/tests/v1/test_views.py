@@ -8,6 +8,7 @@
 from app import create_app
 from instance.config import TestConfig
 from app.api.v1.models import Record as db
+from datetime import datetime
 import pytest
 import json
 
@@ -58,8 +59,17 @@ def test_post(client):
     assert resp.status_code == 201
     assert b'data' in resp.data
     assert b'status' in resp.data
+    # Check that returned data has all fields and contains user input data
     data = json.loads(resp.data.decode('utf-8'))
-    assert 'red-flag record' in data['data'][0]['message']
+    data = data['data'][0] # Returns a dictionary of data item
+    assert data.get('location') == '-1.23, 36.5'
+    assert data.get('comment') == 'crooked tendering processes'
+    assert type(data.get('type')) == str
+    assert type(data.get('status')) == str
+    assert type(data.get('createdBy')) == int
+    assert type(data.get('id')) == int
+    assert type(data.get('Images')) == list 
+    assert type(data.get('Videos')) == list 
     assert resp.mimetype == 'application/json'
     assert resp.headers['Location'] is not None
     # Missing fields in request
@@ -69,6 +79,7 @@ def test_post(client):
     assert resp.status_code ==  400
     resp = client.post('/api/v1/red-flags', data=None)
     assert resp.status_code ==  400
+
 
 def test_get_one(client):
     resp = client.post('/api/v1/red-flags', data=user_input)
