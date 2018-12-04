@@ -10,7 +10,7 @@ from . import api_bp
 from .models import Record
 from .errors import raise_error
 
-class RedflagListAPI(Resource):
+class CreateOrReturnRedflags(Resource):
     """
     Implements methods for creating a record and returning a collection
     of records.
@@ -20,7 +20,7 @@ class RedflagListAPI(Resource):
         self.parser = reqparse.RequestParser()
         self.parser.add_argument('comment', type=str, required=True, help='comment not provided')
         self.parser.add_argument('location', type=str, required=True, help='location not provided')
-        super(RedflagListAPI, self).__init__()
+        super(CreateOrReturnRedflags, self).__init__()
 
     def get(self):
         """
@@ -46,7 +46,7 @@ class RedflagListAPI(Resource):
 
         return output, 201, {'Location': uri}
 
-class RedflagAPI(Resource):
+class SingleRedflag(Resource):
     """
     Implements methods for manipulating a particular record
     """
@@ -83,7 +83,7 @@ class RedflagAPI(Resource):
         out['data'] = [{'id':_id, 'message': 'red-flag record deleted'}]
         return out
 
-class RedflagUpdateAPI(Resource):
+class UpdateSingleRedflag(Resource):
     """
     Updates the location or comment field of red-flag record
     """
@@ -91,7 +91,7 @@ class RedflagUpdateAPI(Resource):
         self.parser = reqparse.RequestParser()
         self.parser.add_argument('comment', type=str)
         self.parser.add_argument('location', type=str)
-        super(RedflagUpdateAPI, self).__init__()
+        super(UpdateSingleRedflag, self).__init__()
 
     def patch(self, _id, field):
         """
@@ -121,6 +121,6 @@ class RedflagUpdateAPI(Resource):
 # API resource routing
 #
 
-api_bp.add_resource(RedflagListAPI, '/red-flags', endpoint='redflags')
-api_bp.add_resource(RedflagAPI, '/red-flags/<_id>', endpoint='redflag')
-api_bp.add_resource(RedflagUpdateAPI, '/red-flags/<_id>/<field>', endpoint='update_redflag')
+api_bp.add_resource(CreateOrReturnRedflags, '/red-flags', endpoint='redflags')
+api_bp.add_resource(SingleRedflag, '/red-flags/<_id>', endpoint='redflag')
+api_bp.add_resource(UpdateSingleRedflag, '/red-flags/<_id>/<field>', endpoint='update_redflag')
