@@ -14,11 +14,11 @@ first clone this repo to your machine
 
  ``` git clone git@github.com:Omulosi/iReporter.git ```
 
-then change the directory to the project by doing
+then change the directory to the project directory
 
 ``` cd iReporter ```
 
-then change to the develop branch
+then move to the develop branch
     ``` git checkout develop ```
 
 to make sure all the project dependencies are installed, create a virtual enviroment and install the packages there.
@@ -59,15 +59,27 @@ the project implements the following endpoints
 |POST | /red-flags | Creates a new red-flag record|
 |GET | /red-flags/<id>| Display a specific record given a ID|
 |DELETE | /red-flags/<id>| Deletes a specific record given an ID|
-|PATCH | /red-flags/<id>/location| Edits the location field of a red-flag
-record|
-| PATCH | /red-flags/<id>/comment| Edits the comment field of a red-flag
-record|
+|PATCH | /red-flags/<id>/location| Edits the location field of a red-flag record|
+| PATCH | /red-flags/<id>/comment| Edits the comment field of a red-flag record|
 
 The endpoints can be tested using Postman, [HTTPie](https://httpie.org/doc) (a command line http client), or curl.
 
+## Sample payload data for testing
+
+Below are sample payload data you can use to test the endpoints
+
+`{'location': '-1.2, 37'}`
+
+`{'comment': 'judges soliciting for bribes'}`
+
+Both are strings and can be passed in as key value pairs in API requests. Check below for examples.
+
+More sample payloads will be added as more endpoints get implemented
+
 ## Test Using **Postman** (Recommended)
-With the project running locally, use the Postman service to test the endpoints by prepending each endpoint in the table above to the base url `http://127.0.0.1:5000/`
+With the project running locally, use the Postman service to test the endpoints by prepending each endpoint in the table above to the base url `http://127.0.0.1:5000/`. 
+
+For endpoints that require user/client input, POstman provides an easy to use graphical interface for supplying the values as key-value pairs.
 
 ## Test Using HTTPie
 
