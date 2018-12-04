@@ -80,7 +80,6 @@ def test_post(client):
     resp = client.post('/api/v1/red-flags', data=None)
     assert resp.status_code ==  400
 
-
 def test_get_one(client):
     resp = client.post('/api/v1/red-flags', data=user_input)
     assert resp.status_code == 201
@@ -136,7 +135,7 @@ def test_delete_one(client):
     assert resp.status_code == 404
     assert resp.headers['Content-Type'] == 'application/json'
 
-def test_patch_location_and_comment(client):
+def test_patch_location_or_comment(client):
     def update_field(field):
         resp = client.post('/api/v1/red-flags', data=user_input)
         assert resp.status_code == 201
@@ -153,7 +152,7 @@ def test_patch_location_and_comment(client):
         assert b'data' in resp.data
         assert b'status' in  resp.data
         data = json.loads(resp.data.decode('utf-8'))
-        assert 'Updated' in data['data'][0]['message']
+        assert data['data'][0]['message'] == field + ' has been successfully updated'
         # Item not present
         resp = client.patch('/api/v1/red-flags/10000/' + field)
         assert resp.status_code == 404
