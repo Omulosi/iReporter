@@ -12,7 +12,6 @@ from datetime import datetime
 import pytest
 import json
 
-
 @pytest.fixture
 def client():
     """
@@ -42,7 +41,6 @@ def test_get_all(client):
     assert resp.status_code == 200
     data = json.loads(resp.data.decode('utf-8'))
     assert len(data['data']) == 0
-
     resp = client.post('/api/v1/red-flags', data=user_input)
     resp = client.get('/api/v1/red-flags')
     assert resp.status_code == 200
@@ -50,6 +48,16 @@ def test_get_all(client):
     assert b'status' in resp.data
     data = json.loads(resp.data.decode('utf-8'))
     assert len(data['data']) == 1
+    data = json.loads(resp.data.decode('utf-8'))
+    data = data['data'][0] # Returns a dictionary of data item
+    assert data.get('location') == '-1.23, 36.5'
+    assert data.get('comment') == 'crooked tendering processes'
+    assert type(data.get('type')) == str
+    assert type(data.get('status')) == str
+    assert type(data.get('createdBy')) == int
+    assert type(data.get('id')) == int
+    assert type(data.get('Images')) == list 
+    assert type(data.get('Videos')) == list 
 
 def test_post(client):
     """
@@ -109,7 +117,6 @@ def test_get_one(client):
     resp = client.get('/api/v1/red-flags/some-id')
     assert resp.status_code == 404
     assert resp.headers['Content-Type'] == 'application/json'
-
 
 def test_delete_one(client):
     # create a red-flag to use for testing deletion
