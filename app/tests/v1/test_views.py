@@ -91,12 +91,23 @@ def test_get_one(client):
     assert resp.headers['Content-Type'] == 'application/json'
     assert b'data' in resp.data
     assert b'status' in resp.data
-    # Item not found
+    # Check that returned data has all fields and contains user input data
+    data = json.loads(resp.data.decode('utf-8'))
+    data = data['data'][0] # Returns a dictionary of data item
+    assert data.get('location') == '-1.23, 36.5'
+    assert data.get('comment') == 'crooked tendering processes'
+    assert type(data.get('type')) == str
+    assert type(data.get('status')) == str
+    assert type(data.get('createdBy')) == int
+    assert type(data.get('id')) == int
+    assert type(data.get('Images')) == list 
+    assert type(data.get('Videos')) == list 
+    # Item not found - ID out of range
     resp = client.get('/api/v1/red-flags/999')
     assert resp.status_code == 404
     assert resp.headers['Content-Type'] == 'application/json'
     # Invalid ID
-    resp = client.get('/api/v1/red-flags/data-id')
+    resp = client.get('/api/v1/red-flags/some-id')
     assert resp.status_code == 404
     assert resp.headers['Content-Type'] == 'application/json'
 
