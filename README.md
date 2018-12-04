@@ -1,6 +1,6 @@
 # iReporter API
 [![Build Status](https://travis-ci.com/Omulosi/iReporter.svg?branch=ch-configure-deploy-file-162371370)](https://travis-ci.com/Omulosi/iReporter)
-[![codecov](https://codecov.io/gh/Omulosi/iReporter/branch/bg-record-model-tests-162368299/graph/badge.svg)](https://codecov.io/gh/Omulosi/iReporter)
+[![codecov](https://codecov.io/gh/Omulosi/iReporter/branch/master/graph/badge.svg)](https://codecov.io/gh/Omulosi/iReporter)
 [![Maintainability](https://api.codeclimate.com/v1/badges/a99a88d28ad37a79dbf6/maintainability)](https://codeclimate.com/github/codeclimate/codeclimate/maintainability)
 
 
