@@ -97,9 +97,9 @@ Run the the application from the command line using `flask run` then in another 
 
 `$http GET api/v1/red-flags/1`
 
-`$http DELETE api/v1/red-flags`
+`$http DELETE api/v1/red-flags/1`
 
-`$http PATCH api/v1/red-flags/location location='45,34'`
+`$http PATCH api/v1/red-flags/1/location location='45,34'`
 
-`$http PATCH api/v1/red-flags/comment comment='police brutality'`
+`$http PATCH api/v1/red-flags/1/comment comment='police brutality'`
     
