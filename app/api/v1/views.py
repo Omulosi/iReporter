@@ -52,6 +52,9 @@ class CreateOrReturnRedflags(Resource):
         if not location or not comment:
             return raise_error(400, "Neither location nor comment should be empty")
         location = valid_location(location)
+        if location is None:
+            return raise_error(400, "Wrong input format for location. "
+                "Use 'lat, long' format. Ensure they are within a valid range")
         record = Record(location=data['location'],
                         comment=data['comment'])
         uri = url_for('v1.redflag', _id=record.data_id, _external=True)
