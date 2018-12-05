@@ -108,9 +108,10 @@ class UpdateSingleRedflag(Resource):
     Updates the location or comment field of red-flag record
     """
     def __init__(self):
-        self.parser = reqparse.RequestParser()
-        self.parser.add_argument('comment', type=str)
-        self.parser.add_argument('location', type=str)
+        self.location_parser = reqparse.RequestParser()
+        self.comment_parser = reqparse.RequestParser()
+        self.location_parser.add_argument('location', type=str)
+        self.comment_parser.add_argument('comment', type=str)
         super(UpdateSingleRedflag, self).__init__()
 
     def patch(self, _id, field):
@@ -123,15 +124,21 @@ class UpdateSingleRedflag(Resource):
         record = Record.by_id(_id)
         if record is None:
             return raise_error(404, "Record does not exist")
-        data = self.parser.parse_args()
         if field == 'location':
-            new_location = data.get('location')
-            if new_location is not None:
-                record.location = new_location
+            location_data = self.location_parser.parse_args(strict=True)
+            new_location = location_data.get('location')
+            if not new_location:
+                return raise_error(400, 'location field should not be empty')
+            if not valid_location(new_location):
+                return raise_error(400, 'location field has invalid format')
+            record.location = new_location
+            
         elif field == 'comment':
-            new_comment = data.get('comment')
-            if new_comment is not None:
-                record.comment = new_comment
+            comment_data = self.comment_parser.parse_args(strict=True)
+            new_comment = comment_data.get('comment')
+            if not new_comment:
+                return raise_error(400, 'comment field should not be empty')
+            record.location = new_comment
         Record.put(record)
         output = {}
         output['status'] = 200

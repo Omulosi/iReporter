@@ -160,12 +160,13 @@ def test_delete_one(client):
 
 def test_patch_location_or_comment(client):
     def update_field(field):
+        # create the redflag to use for testing updates
         resp = client.post('/api/v1/red-flags', data=user_input)
         assert resp.status_code == 201
         start = resp.headers['Location'].find('api')
         uri = '/' + resp.headers['Location'][start:]
         update_uri = uri + '/' + field
-        # check update of location field is successful
+        # check update of location field is successful(valid input)
         if field == 'location':
             update = {'location': '-15.7, 77.2'}
         if field == 'comment':
@@ -176,7 +177,7 @@ def test_patch_location_or_comment(client):
         assert b'status' in  resp.data
         data = json.loads(resp.data.decode('utf-8'))
         assert data['data'][0]['message'] == field + ' has been successfully updated'
-        # Item not present
+        # Item not present - ID out of range
         resp = client.patch('/api/v1/red-flags/10000/' + field)
         assert resp.status_code == 404
         assert resp.headers['Content-Type'] ==  'application/json'
@@ -184,6 +185,32 @@ def test_patch_location_or_comment(client):
         resp = client.patch('/api/v1/red-flags/that-record/' + field)
         assert resp.status_code == 404
         assert resp.headers['Content-Type'] == 'application/json'
+        #
+        # Too many input fields
+        resp = client.patch(update_uri, data={'location': '34,34', 'comment': 'corrupt lawyers'})
+        assert resp.status_code == 400
+        if field == 'location':
+            # only location should be in input data
+            resp = client.patch(update_uri, data={'comment': 'corrupt lawyers'})
+            assert resp.status_code == 400
+            # check for invalid location format
+            resp = client.patch(update_uri, data={'location': '34'})
+            assert resp.status_code == 400
+            resp = client.patch(update_uri, data={'location': 'nairobi'})
+            assert resp.status_code == 400
+            # Check for input ranges
+            resp = client.patch(update_uri, data={'location': '94,45'})
+            assert resp.status_code == 400
+            resp = client.patch(update_uri, data={'location': '34, 182'})
+            assert resp.status_code == 400
+            resp = client.patch(update_uri, data={'location': '-94,45'})
+            assert resp.status_code == 400
+            resp = client.patch(update_uri, data={'location': '34, -182'})
+            assert resp.status_code == 400
+        if field == 'comment':
+            # check that input data shoud only contain comment
+            resp = client.patch(update_uri, data={'location': 'corrupt lawyers'})
+            assert resp.status_code == 400
 
     update_field('location')
     update_field('comment')
