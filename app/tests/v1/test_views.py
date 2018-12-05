@@ -80,12 +80,28 @@ def test_post(client):
     assert type(data.get('Videos')) == list 
     assert resp.mimetype == 'application/json'
     assert resp.headers['Location'] is not None
-    # Missing fields in request
-    resp = client.post('/api/v1/red-flags', data={'location': '23,23'})
+    # Missing field(s) in request
+    resp = client.post('/api/v1/red-flags', data={'location': '23,53'})
     assert resp.status_code ==  400
     resp = client.post('/api/v1/red-flags', data={'comment': 'thief'})
     assert resp.status_code ==  400
     resp = client.post('/api/v1/red-flags', data=None)
+    assert resp.status_code ==  400
+    # input data should not be blank
+    resp = client.post('/api/v1/red-flags', data={'location': '', 'comment':''})
+    assert resp.status_code ==  400
+    # Too many input fields
+    resp = client.post('/api/v1/red-flags', data={'location': '20,20', 'comment':'corruption', '_type':'red-flag'})
+    assert resp.status_code ==  400
+    # Check latitude ranges
+    resp = client.post('/api/v1/red-flags', data={'location': '93,23'})
+    assert resp.status_code ==  400
+    resp = client.post('/api/v1/red-flags', data={'location': '-91,23'})
+    assert resp.status_code ==  400
+    # Check longitude ranges
+    resp = client.post('/api/v1/red-flags', data={'location': '34,181'})
+    assert resp.status_code ==  400
+    resp = client.post('/api/v1/red-flags', data={'location': '45,-183'})
     assert resp.status_code ==  400
 
 def test_get_one(client):
