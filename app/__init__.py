@@ -8,7 +8,7 @@
 """
 
 from flask import Flask
-from instance.config import Config
+from instance.config import Config, DatabaseConfig
 
 def create_app(config_class=Config):
     """

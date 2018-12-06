@@ -8,14 +8,29 @@
 """
 
 from datetime import datetime
-import copy
+import psycopg2
+from instance.config import DatabaseConfig
+import flask
+
+host = DatabaseConfig.HOSTNAME
+username = DatabaseConfig.USERNAME 
+password = DatabaseConfig.SECRET_KEY 
+dbname = DatabaseConfig.DATABASE
+
+
+def connect():
+    """Connect to the PostgreSQL database.  Returns a database connection."""
+    return psycopg2.connect(
+        "host={} user={} password={} dbname={}".format(
+        host, username, password, dbname))
+
 
 class Model:
     """
     Base class for all database objects
     """
-    data_id = 0
-    _db = {} 
+    # data_id = 0
+    # _db = {} 
 
     def __init__(self):
         self.created = datetime.utcnow()
@@ -108,3 +123,4 @@ class Record(Model):
             'comment': self.comment,
             'uri': self.uri if hasattr(self, 'uri')  else ''
             }
+
