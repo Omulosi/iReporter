@@ -7,77 +7,110 @@
 """
 
 import unittest
-from app.api.v1.models import Record
+from app.api.v1.models import Record, User, connect, create_record_table, create_user_table, Model
+from instance.config import TestConfig
+from collections import OrderedDict
+
+
 
 class RecordModel(unittest.TestCase):
 
     def setUp(self):
+
+        # create tables in test_db database
+        #create_user_table(TestConfig)
+        #create_record_table(TestConfig)
         # Create record objects but dont store them in the database
-        self.data = {'location': "-1, 36", 'comment': "Judges soliciting for bribes"}
-        self.r1 = Record(**self.data)
-        self.r2 = Record(**self.data)
+        create_record_table(TestConfig)
+        create_user_table(TestConfig)
+
+        self.r_data = {'location': "-1, 36", 'comment': "Judges soliciting for bribes"}
+        self.r1 = Record(**self.r_data)
+        self.r2 = Record(**self.r_data)
+        self.u_data = {'username': "paul", 'email': "paul@mail"}
+        self.u1 = User(**self.u_data)
+        self.u1.set_password('secret')
+        self.u2 = User(**self.u_data)
+        self.u2.set_password('secret')
 
     def tearDown(self):
         Record.clear_all()
 
     def test_get_all(self):
-        # Database initially empty
         self.assertEqual(Record.all(), [])
         Record.put(self.r1)
         Record.put(self.r2)
         self.assertEqual(len(Record.all()), 2)
 
-    def test_get_by_id(self):
-        r = Record(**self.data)
-        Record.put(r)
-        r_id = r.data_id
-        id_2 = 'id_two'
+        Record.clear_all()
+        User.clear_all()
 
-        self.assertEqual(Record.by_id(r_id), r)
-        self.assertEqual(Record.by_id(id_2), None)
-        self.assertEqual(Record.by_id(27777474), None) # non-existent id
+
+    def test_get_by_id(self):
+        r = Record(**self.r_data)
+        Record.put(r)
+        User.put(self.u1)
+        self.assertEqual(type(r.serialize), OrderedDict)
+        self.assertEqual(Record.by_id(27777474), []) # non-existent id
+        self.assertEqual(User.by_id(27777474), []) # non-existent id
+
+        Record.clear_all()
+        User.clear_all()
+
 
     def test_put_record(self):
-        self.assertEqual(Record.put(self.r1), True)
+        Record.clear_all()
+        User.clear_all()
         # checks that db storage fails if item is not of type Model
-        with self.assertRaises(ValueError):
+        with self.assertRaises(AssertionError):
                 Record.put({'id': 2})
-        with self.assertRaises(ValueError):
-                Record.put([{'id': 5}])
+        with self.assertRaises(AssertionError):
+                User.put([{'id': 5}])
+
+        # Confrim the item is stored
+
+        self.assertEqual(Record.put(self.r1), None)
+        self.assertEqual(User.put(self.u1), None)
+        self.assertEqual(Record.by_id(1), [])
+        self.assertEqual(User.by_id(1), [])
+
+        Record.clear_all()
+        User.clear_all()
+
 
     def test_delete(self):
-        r = Record(**self.data)
-        Record.put(r)
-        r_id = r.data_id
-        self.assertEqual(Record.delete(r_id), True)
-        self.assertEqual(Record.delete(4444), None)
-        self.assertEqual(Record.delete('key'), None)
+
+        Record.put(self.r1)
+        self.assertEqual(Record.delete(1), None)
+        self.assertEqual(Record.by_id(1), []) # Record deleted
+
+
+        Record.clear_all()
+        User.clear_all()
 
     def test_serialize(self):
-        r = Record(**self.data)
-        self.assertEqual(type(r.serialize), dict)
-        self.assertEqual(len(r.serialize), 10)
 
-    def test_add_field(self):
-        r = Record(**self.data)
-        r.add_field('name','test')
-        self.assertEqual(r.name, 'test')
+        self.assertIsInstance(self.r1.serialize, OrderedDict)
+        Record.clear_all()
+        User.clear_all()
+
 
     def test_clear_all(self):
-        r = Record(**self.data)
-        Record.put(r)
+
+        Record.put(self.r1)
+        Record.put(self.r2)
         self.assertEqual(Record.clear_all(), None)
         self.assertEqual(Record.all(), [])
+        Record.clear_all()
+        User.clear_all()
 
-    def test_all_field_present_at_initialization(self):
-        self.assertEqual(self.r2.data_id, self.r1.data_id + 1)
+    def test_required_field_present_at_initialization(self):
         self.assertEqual(self.r1.video, [])
         self.assertEqual(self.r1.image, [])
         self.assertEqual(self.r1.type, 'red-flag')
         self.assertEqual(self.r1.location, "-1, 36")
         self.assertEqual(self.r1.comment, "Judges soliciting for bribes")
         self.assertEqual(self.r1.status, "Under Investigation")
-        self.assertEqual(self.r1.user, None)
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
