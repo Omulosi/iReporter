@@ -43,14 +43,14 @@ def init():
                 """,
 
                 """CREATE TABLE IF NOT EXISTS users(
-                     user_id serial PRIMARY KEY NOT NULL,
+                     id serial PRIMARY KEY NOT NULL,
                      first_name varchar(50) ,
                      last_name varchar(50),
                      user_name varchar(50) NOT NULL,
-                     email varchar(50) NOT NULL,
-                     password varchar(50) NOT NULL,
+                     email varchar(50),
+                     password_hash varchar(50) NOT NULL,
                      registered timestamp with time zone DEFAULT ('now'::text)::date NOT NULL,
-                     isAdmin character varying(100) DEFAULT 'false' NOT NULL
+                     isAdmin boolean  NOT NULL
                )"""
             )
 

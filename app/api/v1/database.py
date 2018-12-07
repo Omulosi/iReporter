@@ -79,12 +79,12 @@ def put_item(item):
                     values)
             db.commit()
         if isinstance(item, User):
-            sql = """
+            c.execute("""
                     insert into users
-                    (firstname, lastname, othernames, phoneNumber, username, email, isAdmin, registered) 
-                    values (%s,%s,%s,%s,%s,%s,%s,%s);
-                """
-            c.execute(sql, values)
+                    (firstname, lastname, othernames, phoneNumber, username, email, isAdmin, registered, password_hash) 
+                    values (%s,%s,%s,%s,%s,%s,%s,%s, %s);
+                     """,
+                values)
             db.commit()
     except Exception as e:
         return
@@ -129,6 +129,34 @@ def clear_db():
     db.commit()
     db.close() 
 
+def get_by_username(username):
+    """
+    Returns a user given a field
+    """
+    res = []
+    db = connect()
+    with db:
+        with db.cursor() as c:
+            c.execute("select * from users where username = %s;", (userna,))
+            data_one = c.fetchone()
+    db.close()
+    if data_one:
+        return data_one
+
+def get_by_email(email):
+    """
+    Returns a user given a field
+    """
+    res = []
+    db = connect()
+    with db:
+        with db.cursor() as c:
+            c.execute("select * from users where email = %s;", (email,))
+            data_one = c.fetchone()
+    db.close()
+    if data_one:
+        return data_one
+
 
 #
 # Storage containers for user input
@@ -153,7 +181,7 @@ class Record(object):
         self.status = 'Under Investigation' if status is None else status
         self.image = [] if image is None else image
         self.video = [] if video is None else video
-        Model.__init__(self)
+        #Model.__init__(self)
 
 
     @property
@@ -170,21 +198,21 @@ class Record(object):
         d['Images'] = self.image
         d['Videos'] = self.video
         d['createdBy'] = 10
-        d['createdOn'] = self.created.strfime("%A, %d. %B %Y %I:%M%p")
+        #d['createdOn'] = self.created.strfime("%A, %d. %B %Y %I:%M%p")
         return d
             
 class User(object):
 
-    def __init__(self, username, email, fname=None, lname=None, othernames=None, phoneNumber=None, isAdmin=False):
+    def __init__(self, username, email=None, fname=None, lname=None, othernames=None, phoneNumber=None, isAdmin=False):
         self.username = username
-        self.email = email
+        self.email = "" if email is None else email
         self.password_hash = None
         self.fname = "" if fname is None else fname
         self.lname = "" if lname is None else lname
         self.othernames = "" if othernames is None else othernames
         self.phoneNumber = "" if phoneNumber is None else phoneNumber
         self.isAdmin = isAdmin
-        Model.__init__(self)
+        #Model.__init__(self)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -206,7 +234,11 @@ class User(object):
         d['phoneNumber'] = self.phoneNumber
         d['username'] = self.username
         d['email'] = self.email,
-        d['isAdmin'] = self.isAdmin
-        d['registered'] = self.created.strfime("%A, %d. %B %Y %I:%M%p")
+        d['isAdmin'] = self.isAdmin,
+        d['password_hash'] = self.password_hash
+        #d['registered'] = self.created.strfime("%A, %d. %B %Y %I:%M%p")
 
         return 
+
+def check_password(password):
+        return check_password_hash(password_hash, password)

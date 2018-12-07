@@ -35,6 +35,7 @@ class CreateOrReturnRedflags(Resource):
         self.parser.add_argument('location', type=str, required=True, help='location not provided')
         super(CreateOrReturnRedflags, self).__init__()
 
+    @jwt_required
     def get(self):
         """
         Returns a collection of all red-flag records
@@ -43,6 +44,7 @@ class CreateOrReturnRedflags(Resource):
         output = {'status': 200, 'data': records}
         return output
 
+    @jwt_required
     def post(self):
         """
         Creates a new red-flag record
@@ -76,7 +78,7 @@ class SingleRedflag(Resource):
     """
     Implements methods for manipulating a particular record
     """
-
+    @jwt_required
     def get(self, _id):
         """
         Returns a single red-flag record
@@ -91,7 +93,7 @@ class SingleRedflag(Resource):
                   'data': [record.serialize]
                  }
         return output
-
+    @jwt_required
     def delete(self, _id):
         """
         Deletes a red-flag record
@@ -119,6 +121,7 @@ class UpdateSingleRedflag(Resource):
         self.parser.add_argument('location', type=str)
         super(UpdateSingleRedflag, self).__init__()
 
+    @jwt_required
     def patch(self, _id, field):
         """
         Updates a field of a red-flag record

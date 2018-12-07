@@ -9,6 +9,8 @@ from flask_restful import Resource, reqparse, url_for
 from . import api_bp
 from .database import get_by_id, get_all, put_item, delete_item, update_item, connect, Record
 from .errors import raise_error
+from flask_jwt_extended import jwt_required
+
 
 class CreateOrReturnInterventions(Resource):
     """
@@ -21,7 +23,7 @@ class CreateOrReturnInterventions(Resource):
         self.parser.add_argument('comment', type=str, required=True, help='comment not provided')
         self.parser.add_argument('location', type=str, required=True, help='location not provided')
         super(CreateOrReturnInterventions, self).__init__()
-
+    @jwt_required
     def get(self):
         """
         Returns a collection of all red-flag records
@@ -29,7 +31,7 @@ class CreateOrReturnInterventions(Resource):
         records = get_all('intervention')
         output = {'status': 200, 'data': records}
         return output
-
+    @jwt_required
     def post(self):
         """
         Creates a new red-flag record
@@ -50,7 +52,7 @@ class SingleIntervention(Resource):
     """
     Implements methods for manipulating a particular record
     """
-
+    @jwt_required
     def get(self, _id):
         """
         Returns a single red-flag record
@@ -65,12 +67,11 @@ class SingleIntervention(Resource):
                   'data': [record.serialize]
                  }
         return output
-
+    @jwt_required
     def delete(self, _id):
         """
         Deletes a red-flag record
         """
-
         if not _id.isnumeric():
             return raise_error(404, "Invalid ID")
         _id = int(_id)
@@ -92,7 +93,7 @@ class UpdateSingleIntervention(Resource):
         self.parser.add_argument('comment', type=str)
         self.parser.add_argument('location', type=str)
         super(UpdateSingleIntervention, self).__init__()
-
+    @jwt_required
     def patch(self, _id, field):
         """
         Updates a field of a red-flag record
