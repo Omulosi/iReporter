@@ -14,4 +14,4 @@ from flask_restful import Api
 bp = Blueprint('v1', __name__)
 api_bp = Api(bp)
 
-from app.api.v1 import views, models, errors
+from app.api.v1 import intervention_views, redflag_views, database, errors

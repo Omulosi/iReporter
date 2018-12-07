@@ -7,34 +7,41 @@
 """
 
 import unittest
-from app.api.v1.models import Record
+from app.api.v1.ireporter_db import Record
+from app.api.v1.config_db import create_tables, connect
+from instance.config import TestDBConfig
 
-class RecordModel(unittest.TestCase):
+class IncidentModel(unittest.TestCase):
 
     def setUp(self):
-        # Create record objects but dont store them in the database
+        # Create Incident objects but dont store them in the database
+        db = connect(TestDBConfig)
+        cursor = db.cursor()
+        cursor.execute('drop table if exists records')
+        create_tables(TestDBConfig)
         self.data = {'location': "-1, 36", 'comment': "Judges soliciting for bribes"}
         self.r1 = Record(**self.data)
         self.r2 = Record(**self.data)
+        Record.put(self.r1)
+        Record.put(self.r2)
 
     def tearDown(self):
         Record.clear_all()
 
     def test_get_all(self):
-        # Database initially empty
-        self.assertEqual(Record.all(), [])
-        Record.put(self.r1)
-        Record.put(self.r2)
+
         self.assertEqual(len(Record.all()), 2)
 
     def test_get_by_id(self):
-        r = Record(**self.data)
-        Record.put(r)
-        r_id = r.data_id
-        id_2 = 'id_two'
+        # r = Record(**self.data)
+        # Record.put(r)
+        # r_id = r.data_id
+        # id_2 = 'id_two'
 
-        self.assertEqual(Record.by_id(r_id), r)
-        self.assertEqual(Record.by_id(id_2), None)
+        self.assertEqual(len(Record.all()), 2)
+
+        self.assertEqual(Record.by_id(1), [])
+        self.assertIsNotNone(Record.by_id(2))
         self.assertEqual(Record.by_id(27777474), None) # non-existent id
 
     def test_put_record(self):
