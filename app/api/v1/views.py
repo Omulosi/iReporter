@@ -138,7 +138,7 @@ class UpdateSingleRedflag(Resource):
             new_comment = comment_data.get('comment')
             if not new_comment:
                 return raise_error(400, 'comment field should not be empty')
-            record.location = new_comment
+            record.comment = new_comment
         Record.put(record)
         output = {}
         output['status'] = 200
