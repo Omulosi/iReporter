@@ -14,8 +14,9 @@ class Model:
     """
     Base class for all database objects
     """
-    data_id = 0
-    _db = {} 
+    # These fields are private to this class
+    _id = 0
+    _db = {}
 
     def __init__(self):
         self.created = datetime.utcnow()
@@ -87,8 +88,12 @@ class Record(Model):
         self.video = [] if video is None else video
         self.user = user
         Model.__init__(self)
-        self.data_id = self.data_id + 1
-        Record.data_id = self.data_id
+        self._id = self.data_id + 1 # updates instance's id for each record
+        Record._id = self.data_id # stores current running count of IDs
+
+    @property
+    def data_id(self):
+        return self._id
 
     @property
     def serialize(self):
