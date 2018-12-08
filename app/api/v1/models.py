@@ -88,8 +88,8 @@ class Record(Model):
         self.video = [] if video is None else video
         self.user = user
         Model.__init__(self)
-        self._id = self.data_id + 1 # updates instance's id for each record
-        Record._id = self.data_id # stores current running count of IDs
+        self._id = self.data_id + 1
+        Record._id = self.data_id
 
     @property
     def data_id(self):
