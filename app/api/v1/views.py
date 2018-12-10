@@ -142,7 +142,7 @@ class UpdateSingleRedflag(Resource):
         Record.put(record)
         output = {}
         output['status'] = 200
-        output['data'] = [{"id": _id, "message": field + ' has been successfully updated', "data": record.serialize }]
+        output['data'] = [{"id": _id, "message": field + ' has been successfully updated', "record": record.serialize }]
         return output, 200
 #
 # API resource routing
