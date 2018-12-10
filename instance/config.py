@@ -21,4 +21,4 @@ class Config:
 class TestConfig(Config):
     TESTING = True
     DEBUG = True
-    DBNAME  = os.environ.get('DBNAME') or 'testdb'
+    DBNAME  = 'testdb'

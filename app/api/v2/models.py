@@ -6,11 +6,10 @@
 
 """
 
-import db
+from app import db
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask import jsonify
-from funcy import project
 
 
 class Base(db.Model):
@@ -101,7 +100,7 @@ class User(Base):
         super(User, self).__init__()
         self.username = username
         self.password_hash = generate_password_hash(password)
-        self.email = '' email if email is None else email
+        self.email = '' if email is None else email
         self.registered  = datetime.utcnow()
         self.firstname = "" if fname is None else fname
         self.lastname = "" if lname is None else lname
@@ -124,7 +123,7 @@ class User(Base):
                          'registered': self.registered,
                          'firstname': self.firstname,
                          'lastname': self.lastname,
-                         'othernames': self.othernames.
+                         'othernames': self.othernames,
                          'phoneNumber': self.phoneNumber,
                          'isAdmin': self.isAdmin
                          })
