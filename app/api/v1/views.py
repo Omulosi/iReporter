@@ -132,7 +132,7 @@ class UpdateSingleRedflag(Resource):
             if not valid_location(new_location):
                 return raise_error(400, 'location field has invalid format')
             record.location = new_location
-            
+
         elif field == 'comment':
             comment_data = self.comment_parser.parse_args(strict=True)
             new_comment = comment_data.get('comment')
@@ -142,7 +142,7 @@ class UpdateSingleRedflag(Resource):
         Record.put(record)
         output = {}
         output['status'] = 200
-        output['data'] = [{"id": _id, "message": field + ' has been successfully updated'}]
+        output['data'] = [{"id": _id, "message": field + ' has been successfully updated', "data": record.serialize }]
         return output, 200
 #
 # API resource routing
