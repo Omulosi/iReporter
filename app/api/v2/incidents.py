@@ -35,7 +35,7 @@ class CreateOrReturnIncidents(Resource):
             return raise_error(404, "The requested url cannot be found")
         incidents = Record.filter_by('type', incident_type)
         return {'status': 200,
-                'data': incidents
+                'data': [incidents]
                }
 
     @fresh_jwt_required
@@ -52,11 +52,15 @@ class CreateOrReturnIncidents(Resource):
             return raise_error(400, "Neither location nor comment should be empty")
         location = valid_location(location)
         if location is None:
-            return raise_error(400, "Wrong input format for location.Use\
-                    'lat, long' format. Ensure they are within a valid range")
-        record = Record(location=data['location'], comment=data['comment'], _type=incident_type)
-        record.put()
-        uri = url_for('v2.incidents', _id=0, _external=True)
+            return raise_error(400, "Wrong input format for location.Use 'lat, long' format. Ensure they are within a valid range")
+        current_user = get_jwt_identity()
+        user = User.filter_by('username', current_user)
+        user_id = user.get('id')
+        record = Record(location=data['location'], comment=data['comment'], _type=incident_type,
+            user_id=user_id)
+        _id = record.put()
+        print("=====================================>", _id)
+        uri = url_for('v2.incident', _id=_id, _external=True)
         output = {}
         output['id'] = 0
         output["message"] = "Created intervention record"

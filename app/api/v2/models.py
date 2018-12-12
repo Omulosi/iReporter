@@ -30,11 +30,10 @@ class Base(db.Model):
             query = """ select * from users where {} = %s;""".format(field)
         cls.query(query, (value,))
         items = cls.fetchall()
-        fields = [desc[0] for desc in cls.cursor.description
-                  if desc[0] != 'user_id' if desc[0] != 'password_hash']
+        fields = [desc[0] for desc in cls.cursor.description]
         if items:
             res = [zip(fields, item) for item in items]
-        return [dict(elem) for elem in res]
+        return [dict(elem) for elem in res][0] if res else {}
 
     @classmethod
     def all(cls):
@@ -92,12 +91,11 @@ class Base(db.Model):
             query = "update users set {} = ".format(field)
         cls.query(query + " %s where id = %s", (data, _id))
 
-
 class Record(Base):
 
     """Record model"""
 
-    def __init__(self, location, comment, _type, user_id=None, status=None, Images=None,
+    def __init__(self, location, comment, _type, user_id, status=None, Images=None,
                  Videos=None, uri=None):
         self.location = location
         self.comment = comment
@@ -105,7 +103,7 @@ class Record(Base):
                 Use 'red-flags' or 'incidents'"
         self.type = _type
         self.createdOn = datetime.utcnow()
-        self.user_id = "" if user_id is None else user_id
+        self.user_id = user_id
         self.status = 'Under Investigation' if status is None else status
         self.Images = [] if Images is None else Images
         self.Videos = [] if Videos is None else Videos
@@ -119,7 +117,7 @@ class Record(Base):
         query = """insert into records (location, comment, type, createdOn, user_id, status,
         Images, Videos, uri) values (%(location)s, %(comment)s, %(type)s,
         %(createdOn)s, %(user_id)s, %(status)s, %(Images)s, %(Videos)s,
-        %(uri)s);"""
+        %(uri)s) returning id;"""
 
         self.query(query,
                 {
@@ -133,7 +131,9 @@ class Record(Base):
                     'Videos': self.Videos,
                     'uri': self.uri
                 })
+        _id = self.fetchone()
         self.commit()
+        return _id
 
     @property
     def serialize(self):
@@ -153,13 +153,12 @@ class Record(Base):
             'uri': self.uri
             }
 
-
 class User(Base):
 
     """User model"""
 
     def __init__(self, username, password, email=None, fname=None, lname=None,
-                 othernames=None, phoneNumber=None, isAdmin=False):
+                 othernames=None, phoneNumber=None, isAdmin=None):
         super(User, self).__init__()
         self.username = username
         self.password_hash = generate_password_hash(password)
@@ -169,7 +168,7 @@ class User(Base):
         self.lastname = "" if lname is None else lname
         self.othernames = "" if othernames is None else othernames
         self.phoneNumber = "" if phoneNumber is None else phoneNumber
-        self.isAdmin = isAdmin
+        self.isAdmin = False if isAdmin is None else isAdmin
 
     def put(self):
         """

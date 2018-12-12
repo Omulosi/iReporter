@@ -11,8 +11,12 @@ from instance.config import Config
 
 class Model(object):
 
+    """
+    Base class for database management methods
+    """
+
     connect_str = "dbname='{}' user='{}' host='{}' password='{}'".format(
-    	Config.DBNAME, Config.USERNAME, Config.HOST, Config.PASSWORD)
+    	   Config.DBNAME, Config.USERNAME, Config.HOST, Config.PASSWORD)
     # use our connection values to establish a connection
     conn = psycopg2.connect(connect_str)
     # create a psycopg2 cursor that can execute queries
@@ -20,33 +24,53 @@ class Model(object):
 
     @classmethod
     def close_connection(cls):
+        """ closes the  db connection """
+
         cls.conn.close()
 
     @classmethod
     def commit(cls):
+        """
+        Abstracts commit command of the database's cursor
+        """
         cls.conn.commit()
 
     @classmethod
-    def query(cls, sql, params=None):
-        cls.cursor.execute(sql, params or ())
+    def query(cls, query, params=None):
+        """
+        Generic query method
+        """
 
+        return cls.cursor.execute(query, params or ())
 
     @classmethod
     def fetchall(cls):
-        return cls.cursor.fetchall()
+        """
+        Abstracts fetchall command of the database's cursor
+        """
+        cls.cursor.fetchall()
 
     @classmethod
     def fetchone(cls):
-        cls.cursor.fetchone()
+        """
+        Abstracts fetchone command of the database's cursor
+        """
+        return cls.cursor.fetchone()[0]
 
     @classmethod
     def by_username(cls, username):
+        """
+        Returns a db item that matches username
+        """
         query = "select * from users where username = %s;"
         cls.query(query, (username,))
         return cls.fetchall()
 
     @classmethod
     def comments(cls):
+        """
+        Returns all comments stored in records table
+        """
         sql = "select comment from records order by createdOn desc;"
         cls.query(sql)
         return cls.fetchall()
@@ -62,7 +86,7 @@ class Model(object):
             query = "select * from {} order by createdOn desc;".format(table_name)
         else:
             columns = ','.join([p for p in params])
-            query = query = "select {} from {} order by createdOn desc;".format(columns,table_name)
+            query = query = "select {} from {} order by createdOn desc;".format(columns, table_name)
         cls.query(query)
         return cls.fetchall()
 
@@ -78,10 +102,10 @@ class Model(object):
             location varchar(30) not null,
             status varchar(50) not null,
             createdOn timestamp with time zone not null default now(),
-            Images not null,
-            Videos not null,
+            Images bytea[],
+            Videos bytea[],
             uri varchar(140),
-            user_id integer references users(id) on delete cascade not null;
+            user_id integer references users(id) on delete cascade not null
             );
             """)
         cls.commit()
