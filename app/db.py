@@ -2,21 +2,17 @@
     app.db
     ~~~~~~~~~~~
 
-    connects to the database and provides interface methods to interact with
-    the database.
+    Provides interface methods for connecting to and manipulating the database.
 
 """
+
 import psycopg2
 from instance.config import Config
 
 class Model(object):
 
-    """
-    Base class for database management methods
-    """
-
     connect_str = "dbname='{}' user='{}' host='{}' password='{}'".format(
-    	   Config.DBNAME, Config.USERNAME, Config.HOST, Config.PASSWORD)
+        Config.DBNAME, Config.USERNAME, Config.HOST, Config.PASSWORD)
     # use our connection values to establish a connection
     conn = psycopg2.connect(connect_str)
     # create a psycopg2 cursor that can execute queries
@@ -24,61 +20,42 @@ class Model(object):
 
     @classmethod
     def close_connection(cls):
-        """ closes the  db connection """
-
         cls.conn.close()
 
     @classmethod
     def commit(cls):
-        """
-        Abstracts commit command of the database's cursor
-        """
         cls.conn.commit()
 
     @classmethod
-    def rollback(cls):
-        """
-        Abstracts commit command of the database's cursor
-        """
-        cls.cursor.execute("rollback;")
-        cls.commit()
+    def query(cls, sql, params=None):
+        cls.cursor.execute(sql, params or ())
 
-    @classmethod
-    def query(cls, query, params=None):
-        """
-        Generic query method
-        """
-
-        cls.cursor.execute(query, params or ())
 
     @classmethod
     def fetchall(cls):
-        """
-        Abstracts fetchall command of the database's cursor
-        """
-        cls.cursor.fetchall()
+        return cls.cursor.fetchall()
 
     @classmethod
     def fetchone(cls):
-        """
-        Abstracts fetchone command of the database's cursor
-        """
-        return cls.cursor.fetchone()[0]
+        cls.cursor.fetchone()
 
     @classmethod
     def by_username(cls, username):
         """
-        Returns a db item that matches username
+        field -> str
+        Returns the record with the given username
         """
-        query = "select * from users where username = '{}';".format(username)
-        cls.query(query)
-        return cls.fetchall()
+        res = []
+        query = """ select * from users where username = %s;"""
+        cls.query(query, (username,))
+        items = cls.fetchall()
+        fields = [desc[0] for desc in cls.cursor.description]
+        if items:
+            res = [zip(fields, item) for item in items]
+        return [dict(elem) for elem in res][0] if res else {}
 
     @classmethod
     def comments(cls):
-        """
-        Returns all comments stored in records table
-        """
         sql = "select comment from records order by createdOn desc;"
         cls.query(sql)
         return cls.fetchall()
@@ -94,7 +71,7 @@ class Model(object):
             query = "select * from {} order by createdOn desc;".format(table_name)
         else:
             columns = ','.join([p for p in params])
-            query = query = "select {} from {} order by createdOn desc;".format(columns, table_name)
+            query = query = "select {} from {} order by createdOn desc;".format(columns,table_name)
         cls.query(query)
         return cls.fetchall()
 
@@ -109,11 +86,11 @@ class Model(object):
             comment varchar(140) not null,
             location varchar(30) not null,
             status varchar(50) not null,
-            createdOn timestamp with time zone not null,
-            Images bytea[],
-            Videos bytea[],
+            createdOn timestamp with time zone not null default now(),
+            Images not null,
+            Videos not null,
             uri varchar(140),
-            user_id integer references users(id) on delete cascade not null
+            user_id integer references users(id) on delete cascade not null;
             );
             """)
         cls.commit()
@@ -125,7 +102,7 @@ class Model(object):
         """
         cls.cursor.execute("""create table if not exists users (
             id serial primary key,
-            username varchar(80) unique not null,
+            username varchar(80) not null,
             email varchar(100) not null,
             createdOn timestamp with time zone not null,
             firstname varchar(100) not null,
@@ -161,8 +138,8 @@ class Model(object):
         """
         Deletes all tables
         """
-        cls.cursor.execute("""drop table records if exists;""")
-        cls.cursor.execute("""drop table users if exists;""")
+        cls.cursor.execute("""drop table records;""")
+        cls.cursor.execute("""drop table users;""")
         cls.commit()
 
     @classmethod

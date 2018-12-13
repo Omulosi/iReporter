@@ -11,6 +11,7 @@ from flask_restful import Resource, reqparse
 from . import api_bp
 from .models import  User
 from .errors import raise_error
+from .utilities import valid_username, valid_email
 
 
 class SignUp(Resource):
@@ -46,19 +47,26 @@ class SignUp(Resource):
         othernames = data.get('othernames')
         isadmin = data.get('isadmin')
 
-        # user = User.filter_by('username', username)
-        # if user:
-        #     return raise_error(401, "Please use a different username")
-        # if email:
-        #     user = User.filter_by('email', email)
-        #     if user:
-        #         return raise_error(401, "Please use a different email")
-        try:
-            user = User(username=username, password=password, email=email, fname=firstname,
-                lname=lastname, othernames=othernames, phoneNumber=phone, isAdmin=isadmin)
-            user.put() # store the user in the database
-        except ValueError as e:
+        username = valid_username(username)
+        email = valid_email(email)
+        if not username:
+            return raise_error(400, "Invalid Username")
+        if not email:
+            return raise_error(400, "Invalid email format")
+        if User.filter_by('username', username):
             return raise_error(401, "Please use a different username")
+        if email and User.filter_by('email', email):
+            return raise_error(401, "Please use a different email")
+        # try:
+        #     user = User(username=username, password=password, email=email, fname=firstname,
+        #         lname=lastname, othernames=othernames, phoneNumber=phone, isAdmin=isadmin)
+        #     user.put() # store the user in the database
+        # except ValueError:
+        #     return raise_error(400, "Please use a different username")
+
+        user = User(username=username, password=password, email=email, fname=firstname,
+                lname=lastname, othernames=othernames, phoneNumber=phone, isAdmin=isadmin)
+        user.put()
         access_token = create_access_token(identity=username, fresh=True)
         refresh_token = create_refresh_token(identity=username)
 
@@ -90,7 +98,7 @@ class Login(Resource):
         data = self.parser.parse_args()
         username = data.get('username')
         password = data.get('password')
-        user = User.filter_by('username', username)
+        user = User.by_username(username)
         if not user:
             return raise_error(401, "Invalid username or password")
         p_hash = user.get('password_hash')

@@ -6,6 +6,8 @@
 
 """
 
+import re
+
 def valid_location(location):
     """
     validates location input
@@ -32,7 +34,27 @@ def valid_status(status):
     Returns True if status is one of Resolved, Investigation, Unresolved.
     Otherwise returns False
     """
-
-    if status not in ['Resolved', 'Under Investigation', 'Unresolved']:
+    status = status.strip()
+    if status not in ['resolved', 'under investigation', 'unresolved']:
         return None
-    return True
+    return status
+
+
+def valid_username(username):
+    """
+    Username is not valid if it is not empty, is not numeric
+    or is composed of whitespaces.
+    """
+    pattern = re.compile(r"^[a-zA-Z][\w]{3,}")
+    return username if pattern.match(username) else None
+
+def valid_email(email):
+    pattern = re.compile(r'^.+@[\w]+\.[\w]+')
+    return email if pattern.match(email) else None
+
+def valid_email(email):
+    pattern = re.compile(r'^.+@[\w]+\.[\w]+')
+    return email if pattern.match(email) else None
+
+def valid_password(email):
+    pass

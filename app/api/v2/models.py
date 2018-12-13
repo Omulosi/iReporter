@@ -1,15 +1,16 @@
-"""
-    app.api.v2.models
-    ~~~~~~~~~~~~~~~~~~
+# """
+#     app.api.v2.models
+#     ~~~~~~~~~~~~~~~~~~
 
-    Database models for users and intervention records
+#     Database models for users and intervention records
 
-"""
+# """
+
+
 
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import db
-import psycopg2
 
 
 class Base(db.Model):
@@ -21,7 +22,7 @@ class Base(db.Model):
     def filter_by(cls, field, value):
         """
         field -> str
-        Takes a field by which to filter and returns an item
+        Takes a field by which to filter and returns all items
         with the field specified
         """
         res = []
@@ -31,12 +32,11 @@ class Base(db.Model):
             query = """ select * from users where {} = %s;""".format(field)
         cls.query(query, (value,))
         items = cls.fetchall()
-        fields = [desc[0] for desc in cls.cursor.description]
+        fields = [desc[0] for desc in cls.cursor.description
+                  if desc[0] != 'user_id' if desc[0] != 'password_hash']
         if items:
             res = [zip(fields, item) for item in items]
-        return [dict(elem) for elem in res][0] if res else {}
-
-
+        return [dict(elem) for elem in res]
     @classmethod
     def all(cls):
         """
@@ -93,20 +93,32 @@ class Base(db.Model):
             query = "update users set {} = ".format(field)
         cls.query(query + " %s where id = %s", (data, _id))
 
+    @classmethod
+    def get_last_inserted_id(cls):
+        """ Given field(string) and data,
+        updates field with data
+        """
+        table = 'records' if (cls == Record) else 'users'
+        query = "select id from {} order by id desc limit 1;".format(table)
+        cls.query(query)
+        _id = cls.fetchall()
+        return _id
+
 
 class Record(Base):
 
     """Record model"""
 
-    def __init__(self, location, comment, _type, user_id, status=None, Images=None,
+    def __init__(self, location, comment, _type, user_id=None, status=None, Images=None,
                  Videos=None, uri=None):
         self.location = location
         self.comment = comment
-        assert _type in ['red-flag', 'intervention'], "Wrong incident type. Use 'red-flags' or 'incidents'"
+        assert _type in ['red-flag', 'intervention'], "Wrong incident type.\
+                Use 'red-flag' or 'intervention'"
         self.type = _type
         self.createdOn = datetime.utcnow()
-        self.user_id = user_id
-        self.status = 'Under Investigation' if status is None else status
+        self.user_id = "" if user_id is None else user_id
+        self.status = 'Draft' if status is None else status
         self.Images = [] if Images is None else Images
         self.Videos = [] if Videos is None else Videos
         self.uri = '' if uri is None else uri
@@ -133,7 +145,6 @@ class Record(Base):
                     'Videos': self.Videos,
                     'uri': self.uri
                 })
-
         self.commit()
 
     @property
@@ -154,12 +165,13 @@ class Record(Base):
             'uri': self.uri
             }
 
+
 class User(Base):
 
     """User model"""
 
     def __init__(self, username, password, email=None, fname=None, lname=None,
-                 othernames=None, phoneNumber=None, isAdmin=None):
+                 othernames=None, phoneNumber=None, isAdmin=False):
         super(User, self).__init__()
         self.username = username
         self.password_hash = generate_password_hash(password)
@@ -169,7 +181,7 @@ class User(Base):
         self.lastname = "" if lname is None else lname
         self.othernames = "" if othernames is None else othernames
         self.phoneNumber = "" if phoneNumber is None else phoneNumber
-        self.isAdmin = False if isAdmin is None else isAdmin
+        self.isAdmin = isAdmin
 
     def put(self):
         """
@@ -180,21 +192,16 @@ class User(Base):
                 phoneNumber, isAdmin)
                 values (%(username)s, %(password_hash)s, %(email)s, %(registered)s,
                 %(firstname)s, %(lastname)s, %(othernames)s, %(phoneNumber)s, %(isAdmin)s);"""
-
-        try:
-            self.query(query, {'username': self.username,
-                               'password_hash': self.password_hash,
-                               'email':  self.email,
-                               'registered': self.registered,
-                               'firstname': self.firstname,
-                               'lastname': self.lastname,
-                               'othernames': self.othernames,
-                               'phoneNumber': self.phoneNumber,
-                               'isAdmin': self.isAdmin
-                              })
-        except psycopg2.IntegrityError as e:
-            self.rollback()
-            raise ValueError(e)
+        self.query(query, {'username': self.username,
+                           'password_hash': self.password_hash,
+                           'email':  self.email,
+                           'registered': self.registered,
+                           'firstname': self.firstname,
+                           'lastname': self.lastname,
+                           'othernames': self.othernames,
+                           'phoneNumber': self.phoneNumber,
+                           'isAdmin': self.isAdmin
+                          })
 
         self.commit()
 
