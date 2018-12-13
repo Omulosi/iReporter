@@ -36,12 +36,20 @@ class Model(object):
         cls.conn.commit()
 
     @classmethod
+    def rollback(cls):
+        """
+        Abstracts commit command of the database's cursor
+        """
+        cls.cursor.execute("rollback;")
+        cls.commit()
+
+    @classmethod
     def query(cls, query, params=None):
         """
         Generic query method
         """
 
-        return cls.cursor.execute(query, params or ())
+        cls.cursor.execute(query, params or ())
 
     @classmethod
     def fetchall(cls):
@@ -62,8 +70,8 @@ class Model(object):
         """
         Returns a db item that matches username
         """
-        query = "select * from users where username = %s;"
-        cls.query(query, (username,))
+        query = "select * from users where username = '{}';".format(username)
+        cls.query(query)
         return cls.fetchall()
 
     @classmethod
@@ -101,7 +109,7 @@ class Model(object):
             comment varchar(140) not null,
             location varchar(30) not null,
             status varchar(50) not null,
-            createdOn timestamp with time zone not null default now(),
+            createdOn timestamp with time zone not null,
             Images bytea[],
             Videos bytea[],
             uri varchar(140),
@@ -117,7 +125,7 @@ class Model(object):
         """
         cls.cursor.execute("""create table if not exists users (
             id serial primary key,
-            username varchar(80) not null,
+            username varchar(80) unique not null,
             email varchar(100) not null,
             createdOn timestamp with time zone not null,
             firstname varchar(100) not null,
@@ -153,8 +161,8 @@ class Model(object):
         """
         Deletes all tables
         """
-        cls.cursor.execute("""drop table records;""")
-        cls.cursor.execute("""drop table users;""")
+        cls.cursor.execute("""drop table records if exists;""")
+        cls.cursor.execute("""drop table users if exists;""")
         cls.commit()
 
     @classmethod

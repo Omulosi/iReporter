@@ -9,6 +9,7 @@
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import db
+import psycopg2
 
 
 class Base(db.Model):
@@ -34,6 +35,7 @@ class Base(db.Model):
         if items:
             res = [zip(fields, item) for item in items]
         return [dict(elem) for elem in res][0] if res else {}
+
 
     @classmethod
     def all(cls):
@@ -91,6 +93,7 @@ class Base(db.Model):
             query = "update users set {} = ".format(field)
         cls.query(query + " %s where id = %s", (data, _id))
 
+
 class Record(Base):
 
     """Record model"""
@@ -99,8 +102,7 @@ class Record(Base):
                  Videos=None, uri=None):
         self.location = location
         self.comment = comment
-        assert _type in ['red-flags', 'interventions'], "Wrong incident type.\
-                Use 'red-flags' or 'incidents'"
+        assert _type in ['red-flag', 'intervention'], "Wrong incident type. Use 'red-flags' or 'incidents'"
         self.type = _type
         self.createdOn = datetime.utcnow()
         self.user_id = user_id
@@ -117,7 +119,7 @@ class Record(Base):
         query = """insert into records (location, comment, type, createdOn, user_id, status,
         Images, Videos, uri) values (%(location)s, %(comment)s, %(type)s,
         %(createdOn)s, %(user_id)s, %(status)s, %(Images)s, %(Videos)s,
-        %(uri)s) returning id;"""
+        %(uri)s);"""
 
         self.query(query,
                 {
@@ -131,9 +133,8 @@ class Record(Base):
                     'Videos': self.Videos,
                     'uri': self.uri
                 })
-        _id = self.fetchone()
+
         self.commit()
-        return _id
 
     @property
     def serialize(self):
@@ -179,16 +180,21 @@ class User(Base):
                 phoneNumber, isAdmin)
                 values (%(username)s, %(password_hash)s, %(email)s, %(registered)s,
                 %(firstname)s, %(lastname)s, %(othernames)s, %(phoneNumber)s, %(isAdmin)s);"""
-        self.query(query, {'username': self.username,
-                           'password_hash': self.password_hash,
-                           'email':  self.email,
-                           'registered': self.registered,
-                           'firstname': self.firstname,
-                           'lastname': self.lastname,
-                           'othernames': self.othernames,
-                           'phoneNumber': self.phoneNumber,
-                           'isAdmin': self.isAdmin
-                          })
+
+        try:
+            self.query(query, {'username': self.username,
+                               'password_hash': self.password_hash,
+                               'email':  self.email,
+                               'registered': self.registered,
+                               'firstname': self.firstname,
+                               'lastname': self.lastname,
+                               'othernames': self.othernames,
+                               'phoneNumber': self.phoneNumber,
+                               'isAdmin': self.isAdmin
+                              })
+        except psycopg2.IntegrityError as e:
+            self.rollback()
+            raise ValueError(e)
 
         self.commit()
 
@@ -225,4 +231,3 @@ class User(Base):
         False otherwise.
         """
         return check_password_hash(p_hash, password)
-

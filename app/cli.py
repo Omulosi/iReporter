@@ -47,6 +47,14 @@ def register(app):
         """
         Model.clear_all_tables()
 
+
+    @db.command()
+    def rollback():
+        """
+        Clear all existing tables. (users and records)
+        """
+        Model.rollback()
+
     @db.command()
     @click.argument('name')
     def clear_table(name):

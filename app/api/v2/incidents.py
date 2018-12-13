@@ -35,7 +35,7 @@ class CreateOrReturnIncidents(Resource):
             return raise_error(404, "The requested url cannot be found")
         incidents = Record.filter_by('type', incident_type)
         return {'status': 200,
-                'data': [incidents]
+                'data': [User.all()]
                }
 
     @fresh_jwt_required
@@ -54,12 +54,14 @@ class CreateOrReturnIncidents(Resource):
         if location is None:
             return raise_error(400, "Wrong input format for location.Use 'lat, long' format. Ensure they are within a valid range")
         current_user = get_jwt_identity()
-        user = User.filter_by('username', current_user)
+        print("========================================>", current_user)
+        user = User.by_username('username')
+        print("=========================================>", user)
         user_id = user.get('id')
-        record = Record(location=data['location'], comment=data['comment'], _type=incident_type,
+        record = Record(location=data['location'], comment=data['comment'], _type=incident_type[:-1],
             user_id=user_id)
-        _id = record.put()
-        print("=====================================>", _id)
+        record.put()
+        _id = Record.get_last_inserted_id()
         uri = url_for('v2.incident', _id=_id, _external=True)
         output = {}
         output['id'] = 0
