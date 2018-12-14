@@ -110,14 +110,18 @@ class SingleIncident(Resource):
         """
         if incident_type not in ['red-flags', 'interventions']:
             return raise_error(404, "The requested url cannot be found")
+        incident_type = incident_type[:-1]
         if not _id.isnumeric():
             return raise_error(404, "Invalid ID")
         _id = int(_id)
+        incident = Record.filter_by('id', _id)
+        if not incident:
+            return raise_error(404, "{} does not exist".format(incident_type))
         current_user = get_jwt_identity()
         user = User.filter_by('username', current_user)
         user_id = user[0].get('id')
         Record.delete(_id, user_id)
-        msg = incident_type[:-1] + ' has been deleted'
+        msg = incident_type + ' has been deleted'
         out = {}
         out['status'] = 200
         out['data'] = [{'id':_id, 'message': msg}]
