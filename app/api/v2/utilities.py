@@ -42,8 +42,8 @@ def valid_status(status):
 
 def valid_username(username):
     """
-    Username is not valid if it is not empty, is not numeric
-    or is composed of whitespaces.
+    Username is not valid if it is empty, is not numeric
+    or is composed of whitespaces only.
     """
     pattern = re.compile(r"^[a-zA-Z][\w]{3,}")
     return username if pattern.match(username) else None

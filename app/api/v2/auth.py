@@ -99,7 +99,9 @@ class Login(Resource):
             return raise_error(401, "Invalid username or password")
         access_token = create_access_token(identity=username, fresh=True)
         refresh_token = create_refresh_token(identity=username)
-        user = dict(filter(lambda entry: entry[0] not in ['password_hash'], user.items()))
+        #user = dict(filter(lambda entry: entry[0] not in ['password_hash'], user.items()))
+        user = dict([(field_name, field_val) for field_name, 
+            field_val in user.items() if field_name != 'password_hash'])
         user['createdon'] = user.get('createdon').strftime('%a, %d %b %Y %H:%M %p')
         return {
             'status': 200,
