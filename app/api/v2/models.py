@@ -6,8 +6,6 @@
 
 # """
 
-
-
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import db
@@ -25,24 +23,25 @@ class Base(db.Model):
         Takes a field by which to filter and returns all items
         with the field specified
         """
-        res = []
+        result = []
         if cls == Record:
             query = """ select * from records where {} = %s;""".format(field)
         if cls == User:
             query = """ select * from users where {} = %s;""".format(field)
         cls.query(query, (value,))
         items = cls.fetchall()
-        fields = [desc[0] for desc in cls.cursor.description
-                  if desc[0] != 'user_id' if desc[0] != 'password_hash']
+        fields = [description[0] for description in cls.cursor.description
+                  if description[0] != 'user_id' if description[0] != 'password_hash']
         if items:
-            res = [zip(fields, item) for item in items]
-        return [dict(elem) for elem in res]
+            result = [zip(fields, item) for item in items]
+        return [dict(elem) for elem in result]
+
     @classmethod
     def all(cls):
         """
         Return all items from users or records
         """
-        res = []
+        result = []
         if cls == Record:
             items = cls.get_all('records')
         if cls == User:
@@ -50,15 +49,15 @@ class Base(db.Model):
         fields = [desc[0] for desc in cls.cursor.description if desc[0] != 'user_id'
                   if desc[0] != 'password_hash']
         if items:
-            res = [zip(fields, item) for item in items]
-        return [dict(elem) for elem in res]
+            result = [zip(fields, item) for item in items]
+        return [dict(elem) for elem in result]
 
     @classmethod
     def by_id(cls, item_id):
         """
         Query an item by id
         """
-        res = []
+        result = []
         if cls == Record:
             query = "select * from records where id = %s;"
         if cls == User:
@@ -68,8 +67,8 @@ class Base(db.Model):
         if item:
             fields = [desc[0] for desc in cls.cursor.description if desc[0] != 'user_id'
                       if desc[0] != 'password_hash']
-            res = [dict(zip(fields, item))]
-        return res
+            result = [dict(zip(fields, item))]
+        return result
 
     @classmethod
     def delete(cls, _id, user_id=None):
@@ -105,7 +104,6 @@ class Base(db.Model):
         _id = cls.fetchall()
         return _id
 
-
 class Record(Base):
 
     """Record model"""
@@ -135,18 +133,19 @@ class Record(Base):
         %(uri)s, %(createdby)s);"""
 
         self.query(query,
-                {
-                    'location': self.location,
-                    'comment': self.comment,
-                    'type': self.type,
-                    'createdon': self.createdon,
-                    'user_id': self.user_id,
-                    'status': self.status,
-                    'images': self.images,
-                    'videos': self.videos,
-                    'uri': self.uri,
-                    'createdby': self.user_id
-                })
+                   {
+                       'location': self.location,
+                       'comment': self.comment,
+                       'type': self.type,
+                       'createdon': self.createdon,
+                       'user_id': self.user_id,
+                       'status': self.status,
+                       'images': self.images,
+                       'videos': self.videos,
+                       'uri': self.uri,
+                       'createdby': self.user_id
+                   })
+
         self.commit()
 
     @property
