@@ -2,7 +2,7 @@
     app.api.v2.utilities
     ~~~~~~~~~~~~~~~~~~
 
-    General utility functions used for validating inputs
+    This module contains general utility functions
 
 """
 
@@ -61,3 +61,14 @@ def valid_password(password):
     """
     password = password.strip()
     return password if len(password) > 5 else None
+
+
+def update_createdon(data_item):
+    """
+    updates the createdon field's datetime data into
+    a string representation of the date.
+    Returns a new dictionary item with the field
+    updated
+    """
+    data_item['createdon'] = data_item['createdon'].strftime('%a, %d %b %Y %H:%M %p')
+    return data_item

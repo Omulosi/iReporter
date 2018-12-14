@@ -10,20 +10,8 @@ from flask_jwt_extended import jwt_required, get_jwt_identity, fresh_jwt_require
 from . import api_bp
 from .models import Record, User
 from .errors import raise_error
-from .utilities import valid_location, valid_comment, valid_status
+from .utilities import valid_location, valid_comment, valid_status, update_createdon
 
-
-
-
-def update_createdon(data_item):
-    """
-    updates the createdon field's datetime data into
-    a string representation of the date.
-    Returns a new dictionary item with the field
-    updated
-    """
-    data_item['createdon'] = data_item['createdon'].strftime('%a, %d %b %Y %H:%M %p')
-    return data_item
 
 
 class CreateOrReturnIncidents(Resource):
@@ -66,10 +54,10 @@ class CreateOrReturnIncidents(Resource):
         if not valid_location(location) or not valid_comment(comment):
             return raise_error(400, "Invalid location and/or comment fields. Check that "
                                     "both fields are not empty and that location has a "
-                                    "'lat,long' format and is within valid ranges.")
+                                    "'lat,long' format and is within valid ranges "
+                                    "(+/-90, +/-180).")
         current_user = get_jwt_identity()
-        user = User.filter_by('username', current_user)
-        user_id = user[0].get('id')
+        user_id = User.filter_by('username', current_user)[0].get('id')
         record = Record(location=data['location'], comment=data['comment'],
                         _type=incident_type[:-1], user_id=int(user_id))
         record.put()
@@ -105,8 +93,6 @@ class SingleIncident(Resource):
         incident = Record.filter_by('id', _id)
         if not incident or incident[0]['type'] != incident_type:
             return raise_error(404, "{} not found".format(incident_type))
-        # incident = incident[0]
-        # incident['createdon'] = incident.get('createdon').strftime('%a, %d %b %Y %H:%M %p')
         incident = update_createdon(incident[0])
         output = {'status': 200,
                   'data': incident
@@ -118,6 +104,11 @@ class SingleIncident(Resource):
         """
         Deletes a single incident record
         """
+
+        username = get_jwt_identity()
+        user = User.filter_by('username', username)[0]
+        user_id = user.get('id')
+
         if incident_type not in ['red-flags', 'interventions']:
             return raise_error(404, "The requested url cannot be found")
         incident_type = incident_type[:-1]
@@ -127,10 +118,12 @@ class SingleIncident(Resource):
         incident = Record.filter_by('id', _id)
         if not incident:
             return raise_error(404, "{} does not exist".format(incident_type))
-        current_user = get_jwt_identity()
-        user = User.filter_by('username', current_user)
-        user_id = user[0].get('id')
-        Record.delete(_id, user_id)
+        createdby = incident[0].get('createdby')
+
+        if user_id != createdby:
+            return raise_error(403, "You can only delete your own record.")
+
+        Record.delete(_id)
         message = incident_type + ' has been deleted'
         output = {}
         output['status'] = 200
@@ -146,9 +139,9 @@ class UpdateSingleIncident(Resource):
         self.location_parser = reqparse.RequestParser()
         self.comment_parser = reqparse.RequestParser()
         self.status_parser = reqparse.RequestParser()
-        self.location_parser.add_argument('location', type=str, required=True)
-        self.comment_parser.add_argument('comment', type=str)
-        self.status_parser.add_argument('status', type=str)
+        self.location_parser.add_argument('location', type=str, required=True, help='location not provided')
+        self.comment_parser.add_argument('comment', type=str, required=True, help='comment not provided')
+        self.status_parser.add_argument('status', type=str, required=True, help='status not provided')
         super(UpdateSingleIncident, self).__init__()
 
     @fresh_jwt_required
@@ -157,11 +150,24 @@ class UpdateSingleIncident(Resource):
         Updates the specified field (location, comment or status)
         """
 
+        username = get_jwt_identity()
+        user = User.filter_by('username', username)[0]
+        user_id = user.get('id')
+
         if incident_type not in ['red-flags', 'interventions']:
             return raise_error(404, "The requested url cannot be found")
+        incident_type = incident_type[:-1]
         if not _id.isnumeric():
             return raise_error(404, "Invalid ID")
         _id = int(_id)
+        incident = Record.filter_by('id', _id)
+        if not incident:
+            return raise_error(404, "{} does not exist".format(incident_type))
+        createdby = incident[0].get('createdby')
+
+        if (user_id != createdby and field != 'status'):
+            return raise_error(403, "You can only update {} field of your own record.".format(field))
+
         if field == 'location':
             location_data = self.location_parser.parse_args(strict=True)
             new_location = location_data.get('location')
@@ -179,9 +185,7 @@ class UpdateSingleIncident(Resource):
             Record.update(_id, field, new_comment)
 
         elif field == 'status':
-            username = get_jwt_identity()
-            user = User.filter_by('username', username)
-            if user and not user[0].get('isadmin'):
+            if not user.get('isadmin'):
                 return raise_error(403, "Request forbidden")
             status_data = self.status_parser.parse_args(strict=True)
             new_status = status_data.get('status')
@@ -192,7 +196,7 @@ class UpdateSingleIncident(Resource):
             Record.update(_id, field, new_status)
 
         output = {}
-        msg = "Updated " + incident_type[:-1] + " record's " + field
+        msg = "Updated " + incident_type + " record's " + field
         output['status'] = 200
         output['data'] = [{"id": _id, "message": msg}]
         return output
