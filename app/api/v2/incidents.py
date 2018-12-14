@@ -57,7 +57,7 @@ class CreateOrReturnIncidents(Resource):
         location = data.get('location')
         comment = data.get('comment')
         if not valid_location(location) or not valid_comment(comment):
-            error_msg = "Invalid location and/or comment fields. Check that both fields are not empty and that location has a 'lat,long' format and is within valid ranges."
+            error_msg = "Invalid location and/or comment fields. Check that both fields are not empty and that location has a 'lat,long' format and is within valid ranges(+/- 90, +/- 180)."
             return raise_error(400,error_msg)
         current_user = get_jwt_identity()
         user = User.filter_by('username', current_user)
