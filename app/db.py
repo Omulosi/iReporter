@@ -86,11 +86,12 @@ class Model(object):
             comment varchar(140) not null,
             location varchar(30) not null,
             status varchar(50) not null,
-            createdOn timestamp with time zone not null default now(),
-            Images not null,
-            Videos not null,
+            createdon timestamp with time zone not null default now(),
+            images varchar(120)[] not null,
+            videos varchar(120)[] not null,
             uri varchar(140),
-            user_id integer references users(id) on delete cascade not null;
+            createdby integer not null,
+            user_id integer references users(id) on delete cascade not null
             );
             """)
         cls.commit()

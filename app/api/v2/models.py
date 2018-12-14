@@ -119,7 +119,7 @@ class Record(Base):
         self.type = _type
         self.createdon = datetime.utcnow()
         self.user_id = user_id or ''
-        self.status = staus or 'Draft'
+        self.status = status or 'Draft'
         self.images = images or []
         self.videos = videos or []
         self.uri = uri or ''
@@ -130,21 +130,22 @@ class Record(Base):
         """
 
         query = """insert into records (location, comment, type, createdOn, user_id, status,
-        Images, Videos, uri) values (%(location)s, %(comment)s, %(type)s,
-        %(createdOn)s, %(user_id)s, %(status)s, %(Images)s, %(Videos)s,
-        %(uri)s);"""
+        Images, Videos, uri, createdby) values (%(location)s, %(comment)s, %(type)s,
+        %(createdon)s, %(user_id)s, %(status)s, %(images)s, %(videos)s,
+        %(uri)s, %(createdby)s);"""
 
         self.query(query,
                 {
                     'location': self.location,
                     'comment': self.comment,
                     'type': self.type,
-                    'createdOn': self.createdon,
+                    'createdon': self.createdon,
                     'user_id': self.user_id,
                     'status': self.status,
-                    'Images': self.images,
-                    'Videos': self.videos,
-                    'uri': self.uri
+                    'images': self.images,
+                    'videos': self.videos,
+                    'uri': self.uri,
+                    'createdby': self.user_id
                 })
         self.commit()
 
@@ -165,7 +166,6 @@ class Record(Base):
             'comment': self.comment,
             'uri': self.uri
             }
-
 
 class User(Base):
 

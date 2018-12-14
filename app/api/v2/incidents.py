@@ -30,11 +30,20 @@ class CreateOrReturnIncidents(Resource):
         Returns a collection of either all redflags or
         all intervention records
         """
+
+        def update_createdon(data_item):
+            """
+            update createdon field to return datetime in string format
+            """
+            data_item['createdon'] = data_item['createdon'].strftime('%a, %d %b %Y %H:%M %p')
+            return data_item
+
         if incident_type not in ['red-flags', 'interventions']:
             return raise_error(404, "The requested url cannot be found")
         incidents = Record.filter_by('type', incident_type[:-1])
+        incidents = list(map(update_createdon, incidents))
         return {'status': 200,
-                'data': str(incidents)
+                'data': incidents
                }
 
     @fresh_jwt_required
