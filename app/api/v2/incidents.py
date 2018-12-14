@@ -104,7 +104,10 @@ class SingleIncident(Resource):
         if not _id.isnumeric():
             return raise_error(404, "Invalid ID")
         _id = int(_id)
-        Record.delete(_id)
+        current_user = get_jwt_identity()
+        user = User.filter_by('username', current_user)
+        user_id = user[0].get('id')
+        Record.delete(_id, user_id)
         msg = incident_type[:-1] + ' has been deleted'
         out = {}
         out['status'] = 200
@@ -153,7 +156,6 @@ class UpdateSingleIncident(Resource):
         elif field == 'status':
             username = get_jwt_identity()
             user = User.filter_by('username', username)
-            print("===============================================>", username, user)
             if user and not user[0].get('isadmin'):
                 return raise_error(403, "Request forbidden")
             status_data = self.status_parser.parse_args(strict=True)

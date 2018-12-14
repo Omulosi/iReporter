@@ -11,7 +11,7 @@ from flask_restful import Resource, reqparse
 from . import api_bp
 from .models import  User
 from .errors import raise_error
-from .utilities import valid_username, valid_email
+from .utilities import valid_username, valid_email, valid_password
 
 
 class SignUp(Resource):
@@ -25,6 +25,7 @@ class SignUp(Resource):
                                  help='Please enter username and password')
         self.parser.add_argument('password', type=str, required=True,
                                  help='Please enter username and password')
+        # Optional fields
         self.parser.add_argument('email', type=str)
         self.parser.add_argument('phone', type=str)
         self.parser.add_argument('firstname', type=str)
@@ -48,24 +49,18 @@ class SignUp(Resource):
         isadmin = data.get('isadmin')
 
         username = valid_username(username)
-        email = valid_email(email)
         if not username:
-            return raise_error(400, "Invalid Username")
-        if not email:
-            return raise_error(400, "Invalid email format")
+            return raise_error(400, "Invalid Username. It should be at least 3 characters long and the first character should be a letter.")
         if User.filter_by('username', username):
-            return raise_error(401, "Please use a different username")
+            return raise_error(400, "Please use a different username")
+        if email and not valid_email(email):
+            return raise_error(400, "Invalid email format")
         if email and User.filter_by('email', email):
-            return raise_error(401, "Please use a different email")
-        # try:
-        #     user = User(username=username, password=password, email=email, fname=firstname,
-        #         lname=lastname, othernames=othernames, phoneNumber=phone, isAdmin=isadmin)
-        #     user.put() # store the user in the database
-        # except ValueError:
-        #     return raise_error(400, "Please use a different username")
-
-        user = User(username=username, password=password, email=email, fname=firstname,
-                lname=lastname, othernames=othernames, phoneNumber=phone, isAdmin=isadmin)
+            return raise_error(400, "Please use a different email")
+        if not valid_password(password):
+            return raise_error(400, "Invalid password. Ensure the password is at least 5 characters long")
+        user = User(username=username, password=password, email=email, firstname=firstname,
+                    lastname=lastname, othernames=othernames, phone_number=phone, isadmin=isadmin)
         user.put()
         access_token = create_access_token(identity=username, fresh=True)
         refresh_token = create_refresh_token(identity=username)
@@ -99,10 +94,8 @@ class Login(Resource):
         username = data.get('username')
         password = data.get('password')
         user = User.by_username(username)
-        if not user:
-            return raise_error(401, "Invalid username or password")
-        p_hash = user.get('password_hash')
-        if not User.check_password(p_hash, password):
+        p_hash = user.get('password_hash', '')
+        if not user or not User.check_password(p_hash, password):
             return raise_error(401, "Invalid username or password")
         access_token = create_access_token(identity=username, fresh=True)
         refresh_token = create_refresh_token(identity=username)

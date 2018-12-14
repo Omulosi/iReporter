@@ -52,9 +52,6 @@ def valid_email(email):
     pattern = re.compile(r'^.+@[\w]+\.[\w]+')
     return email if pattern.match(email) else None
 
-def valid_email(email):
-    pattern = re.compile(r'^.+@[\w]+\.[\w]+')
-    return email if pattern.match(email) else None
-
-def valid_password(email):
-    pass
+def valid_password(password):
+    password = password.strip()
+    return password if len(password) > 5 else None
