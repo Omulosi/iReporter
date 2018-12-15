@@ -57,7 +57,7 @@ class CreateOrReturnIncidents(Resource):
         location = data.get('location')
         comment = data.get('comment')
         if not valid_location(location) or not valid_comment(comment):
-            error_msg = "Invalid location and/or comment fields. Check that both fields are not empty and that location has a 'lat,long' format and is within valid ranges."
+            error_msg = "Invalid location and/or comment fields. Check that both fields are not empty and that location has a 'lat,long' format and is within valid ranges(+/- 90, +/- 180)."
             return raise_error(400,error_msg)
         current_user = get_jwt_identity()
         user = User.filter_by('username', current_user)
@@ -79,7 +79,7 @@ class CreateOrReturnIncidents(Resource):
 
 class SingleIncident(Resource):
     """
-    Implements methods for manipulating a particular record
+    Implements methods for manipulating a particular record with a given id.
     """
 
     @jwt_required
@@ -110,14 +110,20 @@ class SingleIncident(Resource):
         """
         if incident_type not in ['red-flags', 'interventions']:
             return raise_error(404, "The requested url cannot be found")
+        incident_type = incident_type[:-1]
         if not _id.isnumeric():
             return raise_error(404, "Invalid ID")
         _id = int(_id)
+        incident = Record.filter_by('id', _id)
+        if not incident:
+            return raise_error(404, "{} does not exist".format(incident_type))
+        createdby = incident[0].get('createdby')
         current_user = get_jwt_identity()
-        user = User.filter_by('username', current_user)
-        user_id = user[0].get('id')
-        Record.delete(_id, user_id)
-        msg = incident_type[:-1] + ' has been deleted'
+        user_id = User.filter_by('username', current_user)[0].get('id')
+        if user_id != createdby:
+            return raise_error(403, "You can only delete your own record.")
+        Record.delete(_id)
+        msg = incident_type + ' has been deleted'
         out = {}
         out['status'] = 200
         out['data'] = [{'id':_id, 'message': msg}]
