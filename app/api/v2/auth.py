@@ -11,7 +11,7 @@ from flask_restful import Resource, reqparse
 from . import api_bp
 from .models import  User
 from .errors import raise_error
-from .utilities import valid_username, valid_email, valid_password
+from .utilities import valid_username, valid_email, valid_password, update_createdon
 
 
 class SignUp(Resource):
@@ -103,7 +103,7 @@ class Login(Resource):
         refresh_token = create_refresh_token(identity=username)
         user = {field_name: field_val for field_name, field_val
                      in user.items() if field_name != 'password_hash'}
-        user['createdon'] = user.get('createdon').strftime('%a, %d %b %Y %H:%M %p')
+        user = update_createdon(user)
         return {
             'status': 200,
             'data': [{'access_token': access_token,
