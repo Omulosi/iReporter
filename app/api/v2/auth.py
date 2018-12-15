@@ -50,7 +50,8 @@ class SignUp(Resource):
 
         username = valid_username(username)
         if not username:
-            return raise_error(400, "Invalid Username. It should be at least 3 characters long and the first character should be a letter.")
+            return raise_error(400, "Invalid Username. It should be at least 3 characters long and"
+                               "the first character should be a letter.")
         if User.filter_by('username', username):
             return raise_error(400, "Please use a different username")
         if email and not valid_email(email):
@@ -58,7 +59,8 @@ class SignUp(Resource):
         if email and User.filter_by('email', email):
             return raise_error(400, "Please use a different email")
         if not valid_password(password):
-            return raise_error(400, "Invalid password. Ensure the password is at least 5 characters long")
+            return raise_error(400, "Invalid password. "
+                               "Ensure the password is at least 5 characters long")
         user = User(username=username, password=password, email=email, firstname=firstname,
                     lastname=lastname, othernames=othernames, phone_number=phone, isadmin=isadmin)
         user.put()
@@ -88,7 +90,7 @@ class Login(Resource):
 
     def post(self):
         """
-        Logins a user
+        Logs in a user
         """
         data = self.parser.parse_args()
         username = data.get('username')
@@ -99,7 +101,8 @@ class Login(Resource):
             return raise_error(401, "Invalid username or password")
         access_token = create_access_token(identity=username, fresh=True)
         refresh_token = create_refresh_token(identity=username)
-        user = dict(filter(lambda entry: entry[0] not in ['password_hash'], user.items()))
+        user = {field_name: field_val for field_name, field_val
+                     in user.items() if field_name != 'password_hash'}
         user['createdon'] = user.get('createdon').strftime('%a, %d %b %Y %H:%M %p')
         return {
             'status': 200,

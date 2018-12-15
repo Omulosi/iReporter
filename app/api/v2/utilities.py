@@ -13,9 +13,9 @@ def valid_location(location):
     validates location input
     """
     try:
-        coords_list_str = location.split(',')
-        assert len(coords_list_str) == 2
-        latitude, longitude = [float(c) for c in coords_list_str]
+        coordinates = location.split(',')
+        assert len(coordinates) == 2
+        latitude, longitude = [float(c) for c in coordinates]
         assert -90 < latitude <= 90
         assert -180 <= longitude <= 180
         return location
@@ -24,7 +24,7 @@ def valid_location(location):
 
 def valid_comment(comment):
     """
-    Removes white spaces from comment
+    Removes white spaces from comment.
     """
     comment = comment.strip()
     return comment
@@ -42,16 +42,22 @@ def valid_status(status):
 
 def valid_username(username):
     """
-    Username is not valid if it is not empty, is not numeric
-    or is composed of whitespaces.
+    Username is not valid if it is empty, is not numeric
+    or is composed of whitespaces only.
     """
     pattern = re.compile(r"^[a-zA-Z][\w]{3,}")
     return username if pattern.match(username) else None
 
 def valid_email(email):
+    """
+    Returns email if it is valid otherwise None
+    """
     pattern = re.compile(r'^.+@[\w]+\.[\w]+')
     return email if pattern.match(email) else None
 
 def valid_password(password):
+    """
+    Returns password if valid else None
+    """
     password = password.strip()
     return password if len(password) > 5 else None

@@ -12,9 +12,23 @@ from .models import Record, User
 from .errors import raise_error
 from .utilities import valid_location, valid_comment, valid_status
 
+
+
+
+def update_createdon(data_item):
+    """
+    updates the createdon field's datetime data into
+    a string representation of the date.
+    Returns a new dictionary item with the field
+    updated
+    """
+    data_item['createdon'] = data_item['createdon'].strftime('%a, %d %b %Y %H:%M %p')
+    return data_item
+
+
 class CreateOrReturnIncidents(Resource):
     """
-    Implements methods for creating a record and returning a collection
+    Implements methods for creating a record or returning a collection
     of records.
     """
 
@@ -30,13 +44,6 @@ class CreateOrReturnIncidents(Resource):
         Returns a collection of either all redflags or
         all intervention records
         """
-
-        def update_createdon(data_item):
-            """
-            update createdon field to return datetime in string format
-            """
-            data_item['createdon'] = data_item['createdon'].strftime('%a, %d %b %Y %H:%M %p')
-            return data_item
 
         if incident_type not in ['red-flags', 'interventions']:
             return raise_error(404, "The requested url cannot be found")
@@ -57,16 +64,18 @@ class CreateOrReturnIncidents(Resource):
         location = data.get('location')
         comment = data.get('comment')
         if not valid_location(location) or not valid_comment(comment):
-            error_msg = "Invalid location and/or comment fields. Check that both fields are not empty and that location has a 'lat,long' format and is within valid ranges(+/- 90, +/- 180)."
-            return raise_error(400,error_msg)
+            return raise_error(400, "Invalid location and/or comment fields. Check that "
+                                    "both fields are not empty and that location has a "
+                                    "'lat,long' format and is within valid ranges.")
         current_user = get_jwt_identity()
         user = User.filter_by('username', current_user)
         user_id = user[0].get('id')
-        record = Record(location=data['location'], comment=data['comment'], _type=incident_type[:-1],
-            user_id=int(user_id))
+        record = Record(location=data['location'], comment=data['comment'],
+                        _type=incident_type[:-1], user_id=int(user_id))
         record.put()
         _id = Record.get_last_inserted_id()[0][0]
-        uri = url_for('v2.incident', incident_type=incident_type, _id=_id,  _external=True)
+        uri = url_for('v2.incident', incident_type=incident_type, _id=_id, _external=True)
+        Record.update(_id, 'uri', uri)
         output = {}
         output['id'] = _id
         output["message"] = "Created intervention record"
@@ -96,8 +105,9 @@ class SingleIncident(Resource):
         incident = Record.filter_by('id', _id)
         if not incident or incident[0]['type'] != incident_type:
             return raise_error(404, "{} not found".format(incident_type))
-        incident = incident[0]
-        incident['createdon'] = incident.get('createdon').strftime('%a, %d %b %Y %H:%M %p')
+        # incident = incident[0]
+        # incident['createdon'] = incident.get('createdon').strftime('%a, %d %b %Y %H:%M %p')
+        incident = update_createdon(incident[0])
         output = {'status': 200,
                   'data': incident
                  }
@@ -119,15 +129,14 @@ class SingleIncident(Resource):
             return raise_error(404, "{} does not exist".format(incident_type))
         createdby = incident[0].get('createdby')
         current_user = get_jwt_identity()
-        user_id = User.filter_by('username', current_user)[0].get('id')
-        if user_id != createdby:
-            return raise_error(403, "You can only delete your own record.")
-        Record.delete(_id)
-        msg = incident_type + ' has been deleted'
-        out = {}
-        out['status'] = 200
-        out['data'] = [{'id':_id, 'message': msg}]
-        return out
+        user = User.filter_by('username', current_user)
+        user_id = user[0].get('id')
+        Record.delete(_id, user_id)
+        message = incident_type + ' has been deleted'
+        output = {}
+        output['status'] = 200
+        output['data'] = [{'id':_id, 'message': message}]
+        return output
 
 class UpdateSingleIncident(Resource):
     """
@@ -158,7 +167,9 @@ class UpdateSingleIncident(Resource):
             location_data = self.location_parser.parse_args(strict=True)
             new_location = location_data.get('location')
             if not valid_location(new_location):
-                return raise_error(400, "Invalid location. Either it is empty, does not conform to 'lat, long' format or exceeds valid ranges(+/- 90, +/- 180)")
+                return raise_error(400, "Invalid location. Either it is empty, "
+                                        "does not conform to 'lat, long' format "
+                                        "or exceeds valid ranges(+/- 90, +/- 180)")
             Record.update(_id, field, new_location)
 
         elif field == 'comment':
@@ -176,15 +187,16 @@ class UpdateSingleIncident(Resource):
             status_data = self.status_parser.parse_args(strict=True)
             new_status = status_data.get('status')
             if not valid_status(new_status):
-                error_msg = "Invalid status type. Input status is either empty or is not one of 'Resolved', 'Under Investigation' or 'Unresolved'" 
-                return raise_error(400, error_msg)
+                return raise_error(400, "Invalid status type. Input status is "
+                                        "either empty or is not one of 'Resolved',"
+                                        "'Under Investigation' or 'Unresolved'")
             Record.update(_id, field, new_status)
 
         output = {}
         msg = "Updated " + incident_type[:-1] + " record's " + field
         output['status'] = 200
         output['data'] = [{"id": _id, "message": msg}]
-        return output, 200
+        return output
 
 
 # API resource routing
