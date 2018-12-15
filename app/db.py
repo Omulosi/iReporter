@@ -7,6 +7,7 @@
 """
 
 import psycopg2
+from psycopg2.extras import RealDictCursor
 from instance.config import Config
 
 class Model(object):
@@ -16,7 +17,7 @@ class Model(object):
     # use our connection values to establish a connection
     conn = psycopg2.connect(connect_str)
     # create a psycopg2 cursor that can execute queries
-    cursor = conn.cursor()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
 
     @classmethod
     def close_connection(cls):
@@ -42,21 +43,21 @@ class Model(object):
     @classmethod
     def by_username(cls, username):
         """
-        field -> str
-        Returns the record with the given username
+        Returns a user data item with the given username
+        as a dictionary.
         """
-        res = []
         query = """ select * from users where username = %s;"""
         cls.query(query, (username,))
-        items = cls.fetchall()
-        fields = [desc[0] for desc in cls.cursor.description]
-        if items:
-            res = [zip(fields, item) for item in items]
-        return [dict(elem) for elem in res][0] if res else {}
+        record = cls.fetchall()
+        return record[0] if record else {}
 
     @classmethod
     def comments(cls):
-        sql = "select comment from records order by createdOn desc;"
+        """
+        Returns list containing all comments each in a dictionary
+        format.
+        """ 
+        sql = "select comment from records order by createdon desc;"
         cls.query(sql)
         return cls.fetchall()
 

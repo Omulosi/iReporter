@@ -20,60 +20,46 @@ class Base(db.Model):
     def filter_by(cls, field, value):
         """
         field -> str
-        Takes a field by which to filter and returns all items
-        with the field specified
+        Takes a field and a value by which to filter
+        Returns a list of all matching items as dictionaries
+        in a list or an empty list
         """
-        result = []
         if cls == Record:
             query = """ select * from records where {} = %s;""".format(field)
         if cls == User:
             query = """ select * from users where {} = %s;""".format(field)
         cls.query(query, (value,))
-        items = cls.fetchall()
-        fields = [description[0] for description in cls.cursor.description
-                  if description[0] != 'user_id' if description[0] != 'password_hash']
-        if items:
-            result = [zip(fields, item) for item in items]
-        return [dict(elem) for elem in result]
+        return cls.fetchall()
 
     @classmethod
     def all(cls):
         """
-        Return all items from users or records
+        Return all items from users or records as a list of
+        dictionaries or an empty list
         """
-        result = []
         if cls == Record:
-            items = cls.get_all('records')
+            query = """select * from records order by createdon desc;"""
         if cls == User:
-            items = cls.get_all('users')
-        fields = [desc[0] for desc in cls.cursor.description if desc[0] != 'user_id'
-                  if desc[0] != 'password_hash']
-        if items:
-            result = [zip(fields, item) for item in items]
-        return [dict(elem) for elem in result]
+            query = """select * from records order by createdon desc;"""
+        cls.query(query)
+        return cls.fetchall()
 
     @classmethod
     def by_id(cls, item_id):
         """
         Query an item by id
         """
-        result = []
         if cls == Record:
             query = "select * from records where id = %s;"
         if cls == User:
             query = "select * from users where id = %s;"
         cls.query(query, (item_id,))
-        item = cls.fetchall()
-        if item:
-            fields = [desc[0] for desc in cls.cursor.description if desc[0] != 'user_id'
-                      if desc[0] != 'password_hash']
-            result = [dict(zip(fields, item))]
-        return result
+        return cls.fetchall()
 
     @classmethod
     def delete(cls, _id):
         """
-        Deletes a record
+        Deletes a data item with the specified id.
         """
         if cls == Record:
             query = "delete from records where id=%s;"
@@ -84,8 +70,9 @@ class Base(db.Model):
 
     @classmethod
     def update(cls, _id, field, data):
-        """ Given field(string) and data,
-        updates field with data
+        """ 
+        Given a field(string) and data,
+        updates field with data.
         """
         if cls == Record:
             query = "update records set {} = ".format(field)
@@ -103,7 +90,8 @@ class Base(db.Model):
         query = "select id from {} order by id desc limit 1;".format(table)
         cls.query(query)
         _id = cls.fetchall()
-        return _id
+        if _id:
+            return _id[0].get('id')
 
 class Record(Base):
 

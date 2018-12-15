@@ -10,8 +10,8 @@ from flask_jwt_extended import jwt_required, get_jwt_identity, fresh_jwt_require
 from . import api_bp
 from .models import Record, User
 from .errors import raise_error
-from .utilities import valid_location, valid_comment, valid_status, update_createdon
-
+from .utilities import (valid_location, valid_comment, 
+    valid_status, update_createdon, validate_before_update)
 
 
 class CreateOrReturnIncidents(Resource):
@@ -60,8 +60,9 @@ class CreateOrReturnIncidents(Resource):
         user_id = User.filter_by('username', current_user)[0].get('id')
         record = Record(location=data['location'], comment=data['comment'],
                         _type=incident_type[:-1], user_id=int(user_id))
-        record.put()
-        _id = Record.get_last_inserted_id()[0][0]
+        y = record.put()
+        print("###################################", y)
+        _id = Record.get_last_inserted_id()
         uri = url_for('v2.incident', incident_type=incident_type, _id=_id, _external=True)
         Record.update(_id, 'uri', uri)
         output = {}
@@ -100,29 +101,11 @@ class SingleIncident(Resource):
         return output
 
     @fresh_jwt_required
+    @validate_before_update
     def delete(self, incident_type, _id):
         """
         Deletes a single incident record
         """
-
-        username = get_jwt_identity()
-        user = User.filter_by('username', username)[0]
-        user_id = user.get('id')
-
-        if incident_type not in ['red-flags', 'interventions']:
-            return raise_error(404, "The requested url cannot be found")
-        incident_type = incident_type[:-1]
-        if not _id.isnumeric():
-            return raise_error(404, "Invalid ID")
-        _id = int(_id)
-        incident = Record.filter_by('id', _id)
-        if not incident:
-            return raise_error(404, "{} does not exist".format(incident_type))
-        createdby = incident[0].get('createdby')
-
-        if user_id != createdby:
-            return raise_error(403, "You can only delete your own record.")
-
         Record.delete(_id)
         message = incident_type + ' has been deleted'
         output = {}
@@ -144,29 +127,13 @@ class UpdateSingleIncident(Resource):
         self.status_parser.add_argument('status', type=str, required=True, help='status not provided')
         super(UpdateSingleIncident, self).__init__()
 
+
     @fresh_jwt_required
+    @validate_before_update
     def patch(self, incident_type, _id, field):
         """
         Updates the specified field (location, comment or status)
         """
-
-        username = get_jwt_identity()
-        user = User.filter_by('username', username)[0]
-        user_id = user.get('id')
-
-        if incident_type not in ['red-flags', 'interventions']:
-            return raise_error(404, "The requested url cannot be found")
-        incident_type = incident_type[:-1]
-        if not _id.isnumeric():
-            return raise_error(404, "Invalid ID")
-        _id = int(_id)
-        incident = Record.filter_by('id', _id)
-        if not incident:
-            return raise_error(404, "{} does not exist".format(incident_type))
-        createdby = incident[0].get('createdby')
-
-        if (user_id != createdby and field != 'status'):
-            return raise_error(403, "You can only update {} field of your own record.".format(field))
 
         if field == 'location':
             location_data = self.location_parser.parse_args(strict=True)
@@ -185,14 +152,12 @@ class UpdateSingleIncident(Resource):
             Record.update(_id, field, new_comment)
 
         elif field == 'status':
-            if not user.get('isadmin'):
-                return raise_error(403, "Request forbidden")
             status_data = self.status_parser.parse_args(strict=True)
             new_status = status_data.get('status')
             if not valid_status(new_status):
-                return raise_error(400, "Invalid status type. Input status is "
-                                        "either empty or is not one of 'Resolved',"
-                                        "'Under Investigation' or 'Unresolved'")
+                return raise_error(400, "Invalid status type. Status is "
+                                        "either empty or is not one of 'resolved',"
+                                        "'under investigation' or 'unresolved'")
             Record.update(_id, field, new_status)
 
         output = {}
@@ -201,6 +166,27 @@ class UpdateSingleIncident(Resource):
         output['data'] = [{"id": _id, "message": msg}]
         return output
 
+class ReturnUserIncidents(Resource):
+    """
+    Implements methods for manipulating a particular record
+    """
+
+    @jwt_required
+    def get(self, _id, incident_type):
+        """
+        Return all incidents (red-flag/intervention) that
+        belong to particular user.
+        """
+        if incident_type not in ['red-flags', 'interventions']:
+            return raise_error(404, "The requested url cannot be found")
+        if not _id.isnumeric():
+            return raise_error(404, "Invalid ID. Should be an Integer")
+        _id = int(_id)
+        incidents = Record.filter_by('createdby', _id)
+        incidents = list(map(update_createdon, incidents))
+        return {'status': 200,
+                'data': incidents
+               }
 
 # API resource routing
 #
@@ -209,3 +195,4 @@ api_bp.add_resource(CreateOrReturnIncidents, '/<incident_type>', endpoint='incid
 api_bp.add_resource(SingleIncident, '/<incident_type>/<_id>', endpoint='incident')
 api_bp.add_resource(UpdateSingleIncident, '/<incident_type>/<_id>/<field>',\
         endpoint='update_incident')
+#api_bp.add_resource(ReturnUserIncidents, '/users/<_id>/<incident_type>', endpoint='user_incidents')
