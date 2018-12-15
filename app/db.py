@@ -150,3 +150,11 @@ class Model(object):
         query = """drop table {};""".format(table_name)
         cls.cursor.execute(query)
         cls.commit()
+
+    @classmethod
+    def rollback(cls):
+        """
+        Abstracts commit command of the database's cursor
+        """
+        cls.cursor.execute("rollback;")
+        cls.commit()

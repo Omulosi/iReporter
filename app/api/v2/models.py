@@ -72,15 +72,16 @@ class Base(db.Model):
         return res
 
     @classmethod
-    def delete(cls, _id):
+    def delete(cls, _id, user_id=None):
         """
         Deletes a record
         """
-        if cls == Record:
-            query = "delete from records where id=%s;"
-        if cls == User:
+        if cls == Record and user_id:
+            query = "delete from records where id=%s and user_id=%s;"
+            cls.query(query, (_id, user_id))
+        if cls == User and not user_id:
             query = "delete from users where id=%s;"
-        cls.query(query, (_id,))
+            cls.query(query, (_id,))
 
     @classmethod
     def update(cls, _id, field, data):
@@ -109,19 +110,19 @@ class Record(Base):
 
     """Record model"""
 
-    def __init__(self, location, comment, _type, user_id=None, status=None, Images=None,
-                 Videos=None, uri=None):
+    def __init__(self, location, comment, _type, user_id=None, status=None, images=None,
+                 videos=None, uri=None):
         self.location = location
         self.comment = comment
         assert _type in ['red-flag', 'intervention'], "Wrong incident type.\
                 Use 'red-flag' or 'intervention'"
         self.type = _type
-        self.createdOn = datetime.utcnow()
-        self.user_id = "" if user_id is None else user_id
-        self.status = 'Draft' if status is None else status
-        self.Images = [] if Images is None else Images
-        self.Videos = [] if Videos is None else Videos
-        self.uri = '' if uri is None else uri
+        self.createdon = datetime.utcnow()
+        self.user_id = user_id or ''
+        self.status = staus or 'Draft'
+        self.images = images or []
+        self.videos = videos or []
+        self.uri = uri or ''
 
     def put(self):
         """
@@ -138,11 +139,11 @@ class Record(Base):
                     'location': self.location,
                     'comment': self.comment,
                     'type': self.type,
-                    'createdOn': self.createdOn,
+                    'createdOn': self.createdon,
                     'user_id': self.user_id,
                     'status': self.status,
-                    'Images': self.Images,
-                    'Videos': self.Videos,
+                    'Images': self.images,
+                    'Videos': self.videos,
                     'uri': self.uri
                 })
         self.commit()
@@ -154,13 +155,13 @@ class Record(Base):
         Record object
         """
         return {
-            'createdOn': self.createdOn.strftime('%a, %d %b %Y %H:%M %p'),
+            'createdOn': self.createdon.strftime('%a, %d %b %Y %H:%M %p'),
             'createdBy': self.user_id,
             'type': self.type,
             'location': self.location,
             'status': self.status,
-            'Images': self.Images,
-            'Videos': self.Videos,
+            'Images': self.images,
+            'Videos': self.videos,
             'comment': self.comment,
             'uri': self.uri
             }
@@ -170,18 +171,18 @@ class User(Base):
 
     """User model"""
 
-    def __init__(self, username, password, email=None, fname=None, lname=None,
-                 othernames=None, phoneNumber=None, isAdmin=False):
+    def __init__(self, username, password, email=None, firstname=None, lastname=None,
+                 othernames=None, phone_number=None, isadmin=None):
         super(User, self).__init__()
         self.username = username
         self.password_hash = generate_password_hash(password)
-        self.email = '' if email is None else email
+        self.email = email or ''
         self.registered = datetime.utcnow()
-        self.firstname = "" if fname is None else fname
-        self.lastname = "" if lname is None else lname
-        self.othernames = "" if othernames is None else othernames
-        self.phoneNumber = "" if phoneNumber is None else phoneNumber
-        self.isAdmin = isAdmin
+        self.firstname = firstname or ''
+        self.lastname = lastname or ''
+        self.othernames = othernames or ''
+        self.phone_number = phone_number or ''
+        self.isadmin = isadmin or False
 
     def put(self):
         """
@@ -199,8 +200,8 @@ class User(Base):
                            'firstname': self.firstname,
                            'lastname': self.lastname,
                            'othernames': self.othernames,
-                           'phoneNumber': self.phoneNumber,
-                           'isAdmin': self.isAdmin
+                           'phoneNumber': self.phone_number,
+                           'isAdmin': self.isadmin
                           })
 
         self.commit()
@@ -218,8 +219,8 @@ class User(Base):
             'firstname': self.firstname,
             'lastname': self.lastname,
             'othernames': self.othernames,
-            'phoneNumber': self.phoneNumber,
-            'isAdmin': self.isAdmin
+            'phoneNumber': self.phone_number,
+            'isAdmin': self.isadmin
             }
 
     def create_record(self, **kwargs):
@@ -232,9 +233,9 @@ class User(Base):
         record.put()
 
     @staticmethod
-    def check_password(p_hash, password):
+    def check_password(password_hash, password):
         """
         Returns True if password hash is valid
         False otherwise.
         """
-        return check_password_hash(p_hash, password)
+        return check_password_hash(password_hash, password)

@@ -51,7 +51,7 @@ def register(app):
     @db.command()
     def rollback():
         """
-        Clear all existing tables. (users and records)
+        rollback. (users and records)
         """
         Model.rollback()
 
