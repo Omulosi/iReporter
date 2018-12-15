@@ -88,7 +88,7 @@ class CreateOrReturnIncidents(Resource):
 
 class SingleIncident(Resource):
     """
-    Implements methods for manipulating a particular record
+    Implements methods for manipulating a particular record with a given id.
     """
 
     @jwt_required
@@ -127,6 +127,7 @@ class SingleIncident(Resource):
         incident = Record.filter_by('id', _id)
         if not incident:
             return raise_error(404, "{} does not exist".format(incident_type))
+        createdby = incident[0].get('createdby')
         current_user = get_jwt_identity()
         user = User.filter_by('username', current_user)
         user_id = user[0].get('id')

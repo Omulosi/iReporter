@@ -71,16 +71,16 @@ class Base(db.Model):
         return result
 
     @classmethod
-    def delete(cls, _id, user_id=None):
+    def delete(cls, _id):
         """
         Deletes a record
         """
-        if cls == Record and user_id:
-            query = "delete from records where id=%s and user_id=%s;"
-            cls.query(query, (_id, user_id))
-        if cls == User and not user_id:
+        if cls == Record:
+            query = "delete from records where id=%s;"
+        if cls == User:
             query = "delete from users where id=%s;"
-            cls.query(query, (_id,))
+        cls.query(query, (_id,))
+        cls.commit()
 
     @classmethod
     def update(cls, _id, field, data):
@@ -92,6 +92,7 @@ class Base(db.Model):
         if cls == User:
             query = "update users set {} = ".format(field)
         cls.query(query + " %s where id = %s", (data, _id))
+        cls.commit()
 
     @classmethod
     def get_last_inserted_id(cls):
