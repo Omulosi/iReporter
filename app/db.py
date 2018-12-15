@@ -2,17 +2,17 @@
     app.db
     ~~~~~~~~~~~
 
-    connects to the database and provides interface methods to interact with
-    the database.
+    Provides interface methods for connecting to and manipulating the database.
 
 """
+
 import psycopg2
 from instance.config import Config
 
 class Model(object):
 
     connect_str = "dbname='{}' user='{}' host='{}' password='{}'".format(
-    	Config.DBNAME, Config.USERNAME, Config.HOST, Config.PASSWORD)
+        Config.DBNAME, Config.USERNAME, Config.HOST, Config.PASSWORD)
     # use our connection values to establish a connection
     conn = psycopg2.connect(connect_str)
     # create a psycopg2 cursor that can execute queries
@@ -41,9 +41,18 @@ class Model(object):
 
     @classmethod
     def by_username(cls, username):
-        query = "select * from users where username = %s;"
+        """
+        field -> str
+        Returns the record with the given username
+        """
+        res = []
+        query = """ select * from users where username = %s;"""
         cls.query(query, (username,))
-        return cls.fetchall()
+        items = cls.fetchall()
+        fields = [desc[0] for desc in cls.cursor.description]
+        if items:
+            res = [zip(fields, item) for item in items]
+        return [dict(elem) for elem in res][0] if res else {}
 
     @classmethod
     def comments(cls):

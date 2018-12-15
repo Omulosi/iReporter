@@ -1,10 +1,12 @@
-"""
-    app.api.v2.models
-    ~~~~~~~~~~~~~~~~~~
+# """
+#     app.api.v2.models
+#     ~~~~~~~~~~~~~~~~~~
 
-    Database models for users and intervention records
+#     Database models for users and intervention records
 
-"""
+# """
+
+
 
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -20,7 +22,7 @@ class Base(db.Model):
     def filter_by(cls, field, value):
         """
         field -> str
-        Takes a field by which to filter and returns an item
+        Takes a field by which to filter and returns all items
         with the field specified
         """
         res = []
@@ -35,7 +37,6 @@ class Base(db.Model):
         if items:
             res = [zip(fields, item) for item in items]
         return [dict(elem) for elem in res]
-
     @classmethod
     def all(cls):
         """
@@ -92,6 +93,17 @@ class Base(db.Model):
             query = "update users set {} = ".format(field)
         cls.query(query + " %s where id = %s", (data, _id))
 
+    @classmethod
+    def get_last_inserted_id(cls):
+        """ Given field(string) and data,
+        updates field with data
+        """
+        table = 'records' if (cls == Record) else 'users'
+        query = "select id from {} order by id desc limit 1;".format(table)
+        cls.query(query)
+        _id = cls.fetchall()
+        return _id
+
 
 class Record(Base):
 
@@ -101,12 +113,12 @@ class Record(Base):
                  Videos=None, uri=None):
         self.location = location
         self.comment = comment
-        assert _type in ['red-flags', 'interventions'], "Wrong incident type.\
-                Use 'red-flags' or 'incidents'"
+        assert _type in ['red-flag', 'intervention'], "Wrong incident type.\
+                Use 'red-flag' or 'intervention'"
         self.type = _type
         self.createdOn = datetime.utcnow()
         self.user_id = "" if user_id is None else user_id
-        self.status = 'Under Investigation' if status is None else status
+        self.status = 'Draft' if status is None else status
         self.Images = [] if Images is None else Images
         self.Videos = [] if Videos is None else Videos
         self.uri = '' if uri is None else uri
@@ -226,4 +238,3 @@ class User(Base):
         False otherwise.
         """
         return check_password_hash(p_hash, password)
-

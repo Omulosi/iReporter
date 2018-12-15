@@ -33,11 +33,27 @@ def register(app):
         Model.create_users_table()
 
     @db.command()
+    def create_all():
+        """
+        Creates both a users table and a records table
+        """
+        Model.create_users_table()
+        Model.create_records_table()
+
+    @db.command()
     def clear_all():
         """
         Clear all existing tables. (users and records)
         """
         Model.clear_all_tables()
+
+
+    @db.command()
+    def rollback():
+        """
+        Clear all existing tables. (users and records)
+        """
+        Model.rollback()
 
     @db.command()
     @click.argument('name')

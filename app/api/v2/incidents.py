@@ -22,7 +22,6 @@ class CreateOrReturnIncidents(Resource):
         self.parser = reqparse.RequestParser()
         self.parser.add_argument('comment', type=str, required=True, help='comment not provided')
         self.parser.add_argument('location', type=str, required=True, help='location not provided')
-        #self.parser.add_argument('type', type=str, required=True, help='type not provided')
         super(CreateOrReturnIncidents, self).__init__()
 
     @jwt_required
@@ -33,9 +32,9 @@ class CreateOrReturnIncidents(Resource):
         """
         if incident_type not in ['red-flags', 'interventions']:
             return raise_error(404, "The requested url cannot be found")
-        incidents = Record.filter_by('type', incident_type)
+        incidents = Record.filter_by('type', incident_type[:-1])
         return {'status': 200,
-                'data': incidents
+                'data': str(incidents)
                }
 
     @fresh_jwt_required
@@ -48,20 +47,23 @@ class CreateOrReturnIncidents(Resource):
         data = self.parser.parse_args(strict=True)
         location = data.get('location')
         comment = data.get('comment')
-        if not location or not comment:
-            return raise_error(400, "Neither location nor comment should be empty")
-        location = valid_location(location)
-        if location is None:
-            return raise_error(400, "Wrong input format for location.Use\
-                    'lat, long' format. Ensure they are within a valid range")
-        record = Record(location=data['location'], comment=data['comment'], _type=incident_type)
+        if not valid_location(location) or not valid_comment(comment):
+            error_msg = "Invalid location and/or comment fields. Check that both fields are not empty and that location has a 'lat,long' format and is within valid ranges."
+            return raise_error(400,error_msg)
+        current_user = get_jwt_identity()
+        user = User.filter_by('username', current_user)
+        user_id = user[0].get('id')
+        record = Record(location=data['location'], comment=data['comment'], _type=incident_type[:-1],
+            user_id=int(user_id))
         record.put()
-        uri = url_for('v2.incidents', _id=0, _external=True)
+        _id = Record.get_last_inserted_id()[0][0]
+        uri = url_for('v2.incident', incident_type=incident_type, _id=_id,  _external=True)
         output = {}
-        output['id'] = 0
+        output['id'] = _id
         output["message"] = "Created intervention record"
         output = {'status': 201,
-                  'data': [output]
+                  'data': [output],
+                  'uri': uri
                  }
 
         return output, 201, {'Location': uri}
@@ -81,9 +83,12 @@ class SingleIncident(Resource):
         if not _id.isnumeric():
             return raise_error(404, "Invalid ID. Should be an Integer")
         _id = int(_id)
+        incident_type = incident_type[:-1]
         incident = Record.filter_by('id', _id)
-        if not incident:
-            return raise_error(404, "Incident not found")
+        if not incident or incident[0]['type'] != incident_type:
+            return raise_error(404, "{} not found".format(incident_type))
+        incident = incident[0]
+        incident['createdon'] = incident.get('createdon').strftime('%a, %d %b %Y %H:%M %p')
         output = {'status': 200,
                   'data': incident
                  }
@@ -108,14 +113,14 @@ class SingleIncident(Resource):
 
 class UpdateSingleIncident(Resource):
     """
-    Updates the location or comment field of an incident
+    Updates the location, comment or status field of an incident
     """
 
     def __init__(self):
         self.location_parser = reqparse.RequestParser()
         self.comment_parser = reqparse.RequestParser()
         self.status_parser = reqparse.RequestParser()
-        self.location_parser.add_argument('location', type=str)
+        self.location_parser.add_argument('location', type=str, required=True)
         self.comment_parser.add_argument('comment', type=str)
         self.status_parser.add_argument('status', type=str)
         super(UpdateSingleIncident, self).__init__()
@@ -134,32 +139,27 @@ class UpdateSingleIncident(Resource):
         if field == 'location':
             location_data = self.location_parser.parse_args(strict=True)
             new_location = location_data.get('location')
-            if not new_location:
-                return raise_error(400, 'location field should not be empty')
             if not valid_location(new_location):
-                return raise_error(400, 'location field has invalid format')
+                return raise_error(400, "Invalid location. Either it is empty, does not conform to 'lat, long' format or exceeds valid ranges(+/- 90, +/- 180)")
             Record.update(_id, field, new_location)
 
         elif field == 'comment':
             comment_data = self.comment_parser.parse_args(strict=True)
             new_comment = comment_data.get('comment')
-            if not new_comment:
+            if not valid_comment(new_comment):
                 return raise_error(400, 'comment field should not be empty')
-            new_comment = valid_comment(new_comment)
             Record.update(_id, field, new_comment)
 
         elif field == 'status':
             username = get_jwt_identity()
             user = User.filter_by('username', username)
-            if user and not user[0].get('isAdmin'):
+            print("===============================================>", username, user)
+            if user and not user[0].get('isadmin'):
                 return raise_error(403, "Request forbidden")
             status_data = self.status_parser.parse_args(strict=True)
             new_status = status_data.get('status')
-            if not new_status:
-                return raise_error(400, 'status field should not be empty')
             if not valid_status(new_status):
-                error_msg = "Invalid status type.\
-                        Use 'Resolved', 'Under Investigation' or 'Unresolved'"
+                error_msg = "Invalid status type. Input status is either empty or is not one of 'Resolved', 'Under Investigation' or 'Unresolved'" 
                 return raise_error(400, error_msg)
             Record.update(_id, field, new_status)
 

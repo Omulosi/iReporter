@@ -30,5 +30,3 @@ def create_app(config_class=Config):
     app.register_blueprint(api_v2, url_prefix='/api/v2')
 
     return app
-
-from app import db

@@ -11,6 +11,8 @@ from flask_restful import Resource, reqparse
 from . import api_bp
 from .models import  User
 from .errors import raise_error
+from .utilities import valid_username, valid_email
+
 
 class SignUp(Resource):
     """
@@ -24,6 +26,11 @@ class SignUp(Resource):
         self.parser.add_argument('password', type=str, required=True,
                                  help='Please enter username and password')
         self.parser.add_argument('email', type=str)
+        self.parser.add_argument('phone', type=str)
+        self.parser.add_argument('firstname', type=str)
+        self.parser.add_argument('lastname', type=str)
+        self.parser.add_argument('othernames', type=str)
+        self.parser.add_argument('isadmin', type=str)
         super(SignUp, self).__init__()
 
     def post(self):
@@ -34,16 +41,32 @@ class SignUp(Resource):
         username = data.get('username')
         password = data.get('password')
         email = data.get('email')
+        phone = data.get('phone')
+        firstname = data.get('firstname')
+        lastname = data.get('lastname')
+        othernames = data.get('othernames')
+        isadmin = data.get('isadmin')
 
-        user = User.filter_by('username', username)
-        if user:
+        username = valid_username(username)
+        email = valid_email(email)
+        if not username:
+            return raise_error(400, "Invalid Username")
+        if not email:
+            return raise_error(400, "Invalid email format")
+        if User.filter_by('username', username):
             return raise_error(401, "Please use a different username")
-        if email:
-            user = User.filter_by('email', email)
-            if user:
-                return raise_error(401, "Please use a different email")
-        user = User(username=username, password=password, email=email)
-        user.put() # store the user in the database
+        if email and User.filter_by('email', email):
+            return raise_error(401, "Please use a different email")
+        # try:
+        #     user = User(username=username, password=password, email=email, fname=firstname,
+        #         lname=lastname, othernames=othernames, phoneNumber=phone, isAdmin=isadmin)
+        #     user.put() # store the user in the database
+        # except ValueError:
+        #     return raise_error(400, "Please use a different username")
+
+        user = User(username=username, password=password, email=email, fname=firstname,
+                lname=lastname, othernames=othernames, phoneNumber=phone, isAdmin=isadmin)
+        user.put()
         access_token = create_access_token(identity=username, fresh=True)
         refresh_token = create_refresh_token(identity=username)
 
@@ -54,7 +77,6 @@ class SignUp(Resource):
                       'user': user.serialize
                      }]
             }, 201
-
 
 class Login(Resource):
     """
@@ -76,21 +98,21 @@ class Login(Resource):
         data = self.parser.parse_args()
         username = data.get('username')
         password = data.get('password')
-
-        user = User.filter_by('username', username)
+        user = User.by_username(username)
         if not user:
             return raise_error(401, "Invalid username or password")
-        p_hash = user[0].get('password_hash')
+        p_hash = user.get('password_hash')
         if not User.check_password(p_hash, password):
             return raise_error(401, "Invalid username or password")
         access_token = create_access_token(identity=username, fresh=True)
         refresh_token = create_refresh_token(identity=username)
-
+        user = dict(filter(lambda entry: entry[0] not in ['password_hash'], user.items()))
+        user['createdon'] = user.get('createdon').strftime('%a, %d %b %Y %H:%M %p')
         return {
             'status': 200,
             'data': [{'access_token': access_token,
                       'refresh_token': refresh_token,
-                      'user': user.serialize
+                      'user': user
                      }]
             }
 
