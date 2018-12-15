@@ -8,26 +8,12 @@
 from flask_restful import Resource, reqparse, url_for
 from . import api_bp
 from .models import Record
-from .errors import raise_error
+from app.api.errors import raise_error
+from app.api.utils import valid_location, valid_comment
 
 #
 # Input validation functions
 #
-
-def valid_location(location):
-    try:
-        coords_list_str = location.split(',')
-        assert len(coords_list_str) == 2
-        latitude, longitude = [float(c) for c in coords_list_str]
-        assert -90 < latitude <= 90
-        assert -180 <= longitude <= 180
-        return location
-    except (AssertionError, ValueError):
-        return
-
-def valid_comment(comment):
-    comment = comment.strip()
-    return comment
 
 class CreateOrReturnRedflags(Resource):
     """
@@ -139,13 +125,11 @@ class UpdateSingleRedflag(Resource):
             if not valid_location(new_location):
                 return raise_error(400, 'location field has invalid format')
             record.location = new_location
-
         elif field == 'comment':
             comment_data = self.comment_parser.parse_args(strict=True)
-            new_comment = comment_data.get('comment').strip()
-            if not new_comment:
+            if not valid_comment(comment_data):
                 return raise_error(400, 'comment field should not be empty')
-            record.comment = new_comment
+            record.comment = comment_data
         Record.put(record)
         output = {}
         output['status'] = 200

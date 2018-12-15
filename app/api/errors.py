@@ -1,8 +1,8 @@
 """
-    app.api.v2.errors
+    app.api.errors
     ~~~~~~~~~~~~~~~~~
 
-    Implement utility methods for handling error conditions
+    Implements utility methods for handling error conditions
 
 """
 

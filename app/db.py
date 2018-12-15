@@ -61,21 +61,6 @@ class Model(object):
         cls.query(sql)
         return cls.fetchall()
 
-
-    @classmethod
-    def get_all(cls, table_name, *params):
-        """
-        Takes a table_name(str) and params(tuple of fields).
-        Returns a collection of all items
-        """
-        if not params:
-            query = "select * from {} order by createdOn desc;".format(table_name)
-        else:
-            columns = ','.join([p for p in params])
-            query = query = "select {} from {} order by createdOn desc;".format(columns,table_name)
-        cls.query(query)
-        return cls.fetchall()
-
     @classmethod
     def create_records_table(cls):
         """

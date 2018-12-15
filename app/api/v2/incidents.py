@@ -5,13 +5,15 @@
     Implements API endpoints
 
 """
+
 from flask_restful import Resource, reqparse, url_for
 from flask_jwt_extended import jwt_required, get_jwt_identity, fresh_jwt_required
+from app.api.errors import raise_error
+from app.api.utils import (valid_location, valid_comment, valid_status,
+                           update_createdon)
 from . import api_bp
 from .models import Record, User
-from .errors import raise_error
-from .utilities import (valid_location, valid_comment, 
-    valid_status, update_createdon, validate_before_update)
+from .decorators import validate_before_update
 
 
 class CreateOrReturnIncidents(Resource):
@@ -48,26 +50,28 @@ class CreateOrReturnIncidents(Resource):
         """
         if incident_type not in ['red-flags', 'interventions']:
             return raise_error(404, "The requested url cannot be found")
+        incident_type = incident_type[:-1]
         data = self.parser.parse_args(strict=True)
         location = data.get('location')
         comment = data.get('comment')
-        if not valid_location(location) or not valid_comment(comment):
-            return raise_error(400, "Invalid location and/or comment fields. Check that "
-                                    "both fields are not empty and that location has a "
-                                    "'lat,long' format and is within valid ranges "
-                                    "(+/-90, +/-180).")
+        if not valid_location(location):
+            return raise_error(400, "Invalid location. Check that the location field"
+                                    "is not empty and that it has a 'lat,long' format"
+                                    "and is within valid ranges (+/-90, +/-180).")
+        if not valid_comment(comment):
+            return raise_error(400, "Invalid  comment. Check that the comment "
+                                    "is not empty/blank and that it has meaningful words")
         current_user = get_jwt_identity()
         user_id = User.filter_by('username', current_user)[0].get('id')
         record = Record(location=data['location'], comment=data['comment'],
-                        _type=incident_type[:-1], user_id=int(user_id))
-        y = record.put()
-        print("###################################", y)
-        _id = Record.get_last_inserted_id()
-        uri = url_for('v2.incident', incident_type=incident_type, _id=_id, _external=True)
-        Record.update(_id, 'uri', uri)
+                        _type=incident_type, user_id=int(user_id))
+        record.put()
+        record_id = Record.get_last_inserted_id()
+        uri = url_for('v2.incident', incident_type=incident_type, _id=record_id, _external=True)
+        Record.update(record_id, 'uri', uri)
         output = {}
-        output['id'] = _id
-        output["message"] = "Created intervention record"
+        output['id'] = record_id
+        output["message"] = "Created {} record".format(incident_type)
         output = {'status': 201,
                   'data': [output],
                   'uri': uri
@@ -122,9 +126,12 @@ class UpdateSingleIncident(Resource):
         self.location_parser = reqparse.RequestParser()
         self.comment_parser = reqparse.RequestParser()
         self.status_parser = reqparse.RequestParser()
-        self.location_parser.add_argument('location', type=str, required=True, help='location not provided')
-        self.comment_parser.add_argument('comment', type=str, required=True, help='comment not provided')
-        self.status_parser.add_argument('status', type=str, required=True, help='status not provided')
+        self.location_parser.add_argument('location', type=str, required=True,
+                                          help='location not provided')
+        self.comment_parser.add_argument('comment', type=str, required=True,
+                                         help='comment not provided')
+        self.status_parser.add_argument('status', type=str, required=True,
+                                        help='status not provided')
         super(UpdateSingleIncident, self).__init__()
 
 
@@ -135,31 +142,34 @@ class UpdateSingleIncident(Resource):
         Updates the specified field (location, comment or status)
         """
 
+        def can_update(parser, field, data_validator):
+            """
+            checks if field is valid
+            """
+            data_parser = parser.parse_args(strict=True)
+            new_data = data_parser.get(field)
+            return data_validator(new_data)
+
         if field == 'location':
-            location_data = self.location_parser.parse_args(strict=True)
-            new_location = location_data.get('location')
-            if not valid_location(new_location):
-                return raise_error(400, "Invalid location. Either it is empty, "
-                                        "does not conform to 'lat, long' format "
-                                        "or exceeds valid ranges(+/- 90, +/- 180)")
-            Record.update(_id, field, new_location)
+            error_msg = ("Invalid location. Either it is empty,"
+                         "does not conform to 'lat, long' format"
+                         "or exceeds valid ranges(+/- 90, +/- 180)")
+            parser, data_validator = self.location_parser, valid_location
 
         elif field == 'comment':
-            comment_data = self.comment_parser.parse_args(strict=True)
-            new_comment = comment_data.get('comment')
-            if not valid_comment(new_comment):
-                return raise_error(400, 'comment field should not be empty')
-            Record.update(_id, field, new_comment)
+            error_msg = 'comment field should not be empty'
+            parser, data_validator = self.comment_parser, valid_comment
 
         elif field == 'status':
-            status_data = self.status_parser.parse_args(strict=True)
-            new_status = status_data.get('status')
-            if not valid_status(new_status):
-                return raise_error(400, "Invalid status type. Status is "
-                                        "either empty or is not one of 'resolved',"
-                                        "'under investigation' or 'unresolved'")
-            Record.update(_id, field, new_status)
+            error_msg = ("Invalid status type. Status is either empty or "
+                         "is not one of 'resolved','under investigation' or"
+                         " 'unresolved' ")
+            parser, data_validator = self.status_parser, valid_status
 
+        new_data = can_update(parser, field, data_validator)
+        if not new_data:
+            return raise_error(400, error_msg)
+        Record.update(_id, field, new_data)
         output = {}
         msg = "Updated " + incident_type + " record's " + field
         output['status'] = 200
@@ -172,17 +182,23 @@ class ReturnUserIncidents(Resource):
     """
 
     @jwt_required
-    def get(self, _id, incident_type):
+    def get(self, user_id, incident_type):
         """
-        Return all incidents (red-flag/intervention) that
-        belong to particular user.
+        Return all incidents (red-flag/intervention) created by
+        a paricular with the id 'user_id'.
         """
         if incident_type not in ['red-flags', 'interventions']:
             return raise_error(404, "The requested url cannot be found")
-        if not _id.isnumeric():
+        incident_type = incident_type[:-1]
+        if not user_id.isnumeric():
             return raise_error(404, "Invalid ID. Should be an Integer")
-        _id = int(_id)
-        incidents = Record.filter_by('createdby', _id)
+        user_id = int(user_id)
+        if not User.by_id(user_id):
+            return raise_error(404, "User does not exist")
+
+        incidents = Record.query("""select * from records where user_id = %s and
+                type = %s;""", (user_id, incident_type))
+        incidents = Record.fetchall()
         incidents = list(map(update_createdon, incidents))
         return {'status': 200,
                 'data': incidents
@@ -195,4 +211,5 @@ api_bp.add_resource(CreateOrReturnIncidents, '/<incident_type>', endpoint='incid
 api_bp.add_resource(SingleIncident, '/<incident_type>/<_id>', endpoint='incident')
 api_bp.add_resource(UpdateSingleIncident, '/<incident_type>/<_id>/<field>',\
         endpoint='update_incident')
-#api_bp.add_resource(ReturnUserIncidents, '/users/<_id>/<incident_type>', endpoint='user_incidents')
+api_bp.add_resource(ReturnUserIncidents, '/users/<user_id>/<incident_type>',
+                    endpoint='user_incidents')
