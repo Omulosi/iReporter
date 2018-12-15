@@ -7,31 +7,43 @@
 """
 
 from flask_jwt_extended import (create_access_token, create_refresh_token, jwt_refresh_token_required, get_jwt_identity)
-from flask_restful import Resource, reqparse, url_for
+from flask_restful import Resource, reqparse
 from . import api_bp
-from .models import Record, User
+from .models import  User
 from .errors import raise_error
-from werkzeug.security import check_password_hash
 
 class SignUp(Resource):
     """
-    Implements method for signing up a suser
+    Implements method for signing up a user
     """
     def __init__(self):
+
         self.parser = reqparse.RequestParser()
-        self.parser.add_argument('username', type=str, required=True, 
-                help='Please enter username and password')
+        self.parser.add_argument('username', type=str, required=True,
+                                 help='Please enter username and password')
         self.parser.add_argument('password', type=str, required=True,
-                help='Please enter username and password')
+                                 help='Please enter username and password')
         self.parser.add_argument('email', type=str)
         super(SignUp, self).__init__()
 
     def post(self):
+        """
+        Registers a new user
+        """
         data = self.parser.parse_args()
         username = data.get('username')
         password = data.get('password')
         email = data.get('email')
 
+        user = User.filter_by('username', username)
+        if user:
+            return raise_error(401, "Please use a different username")
+        if email:
+            user = User.filter_by('email', email)
+            if user:
+                return raise_error(401, "Please use a different email")
+        user = User(username=username, password=password, email=email)
+        user.put() # store the user in the database
         access_token = create_access_token(identity=username, fresh=True)
         refresh_token = create_refresh_token(identity=username)
 
@@ -39,31 +51,38 @@ class SignUp(Resource):
             'status': 201,
             'data': [{'access_token': access_token,
                       'refresh_token': refresh_token,
-                      'user': {'username': username}
+                      'user': user.serialize
                      }]
             }, 201
 
 
 class Login(Resource):
     """
-    Implements login endpoint. The endpoint returns and access and
+    Implements login endpoint. The endpoint returns an access and
     a fresh token on successful request.
     """
     def __init__(self):
         self.parser = reqparse.RequestParser()
-        self.parser.add_argument('username', type=str, required=True, 
-                help='Please enter username and password')
+        self.parser.add_argument('username', type=str, required=True,
+                                 help='Please enter username and password')
         self.parser.add_argument('password', type=str, required=True,
-              help='Please enter username and password')
+                                 help='Please enter username and password')
         super(Login, self).__init__()
 
-
     def post(self):
+        """
+        Logins a user
+        """
         data = self.parser.parse_args()
         username = data.get('username')
         password = data.get('password')
-        email = data.get('email')
 
+        user = User.filter_by('username', username)
+        if not user:
+            return raise_error(401, "Invalid username or password")
+        p_hash = user[0].get('password_hash')
+        if not User.check_password(p_hash, password):
+            return raise_error(401, "Invalid username or password")
         access_token = create_access_token(identity=username, fresh=True)
         refresh_token = create_refresh_token(identity=username)
 
@@ -71,7 +90,7 @@ class Login(Resource):
             'status': 200,
             'data': [{'access_token': access_token,
                       'refresh_token': refresh_token,
-                      'user': {'username': username}
+                      'user': user.serialize
                      }]
             }
 
@@ -83,11 +102,14 @@ class RefreshToken(Resource):
 
     @jwt_refresh_token_required
     def post(self):
+        """
+        Returns a new access token
+        """
         current_user = get_jwt_identity()
-        new_refresh_token = create_access_token(identity=current_user, fresh=False)
+        new_token = create_access_token(identity=current_user, fresh=False)
         return {
             'status': 200,
-            'data': [{'access_token': new_refresh_token
+            'data': [{'access_token': new_token
                      }]
             }
 

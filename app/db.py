@@ -78,7 +78,6 @@ class Model(object):
             location varchar(30) not null,
             status varchar(50) not null,
             createdOn timestamp with time zone not null default now(),
-            createdBy integer not null,
             Images not null,
             Videos not null,
             uri varchar(140),
@@ -101,7 +100,7 @@ class Model(object):
             lastname varchar(100) not null,
             othernames varchar(100) not null,
             phoneNumber varchar(100) not null,
-            isAdmin varchar(100) not null,
+            isAdmin boolean not null,
             password_hash varchar(100) not null
             );
             """)

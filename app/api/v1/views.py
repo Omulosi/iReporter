@@ -10,6 +10,9 @@ from . import api_bp
 from .models import Record
 from .errors import raise_error
 
+#
+# Input validation functions
+#
 
 def valid_location(location):
     try:
@@ -21,6 +24,10 @@ def valid_location(location):
         return location
     except (AssertionError, ValueError):
         return
+
+def valid_comment(comment):
+    comment = comment.strip()
+    return comment
 
 class CreateOrReturnRedflags(Resource):
     """
@@ -48,7 +55,7 @@ class CreateOrReturnRedflags(Resource):
         """
         data = self.parser.parse_args(strict=True) # Dictionary of input data
         location = data.get('location')
-        comment = data.get('comment')
+        comment = data.get('comment').strip()
         if not location or not comment:
             return raise_error(400, "Neither location nor comment should be empty")
         location = valid_location(location)
@@ -135,7 +142,7 @@ class UpdateSingleRedflag(Resource):
 
         elif field == 'comment':
             comment_data = self.comment_parser.parse_args(strict=True)
-            new_comment = comment_data.get('comment')
+            new_comment = comment_data.get('comment').strip()
             if not new_comment:
                 return raise_error(400, 'comment field should not be empty')
             record.comment = new_comment

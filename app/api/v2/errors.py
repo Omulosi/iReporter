@@ -20,12 +20,23 @@ def raise_error(status_code, message):
 
 @jwt.invalid_token_loader
 def invalid_token_callback(error_msg):
+    """
+    Returns a custom 422 error message when a user
+    provides an invalid token
+    """
     return raise_error(422, error_msg)
 
 @jwt.unauthorized_loader
 def unauthorized_callback(error_msg):
+    """
+    Called when invalid credentials are provided
+    """
     return raise_error(401, error_msg)
 
 @jwt.expired_token_loader
 def expired_token_callback():
+    """
+    Returns a custom error message when a user provides
+    an expired token
+    """
     return raise_error(401, "Token has expired")
