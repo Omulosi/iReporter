@@ -6,12 +6,13 @@
 
 """
 
-from flask_jwt_extended import (create_access_token, create_refresh_token, jwt_refresh_token_required, get_jwt_identity)
+from flask_jwt_extended import (create_access_token, create_refresh_token, 
+                                jwt_refresh_token_required, get_jwt_identity)
 from flask_restful import Resource, reqparse
-from . import api_bp
+from app.api.errors import raise_error
+from app.api.utils import valid_username, valid_email, valid_password, update_createdon
 from .models import  User
-from .errors import raise_error
-from .utilities import valid_username, valid_email, valid_password, update_createdon
+from . import api_bp
 
 
 class SignUp(Resource):
@@ -102,7 +103,7 @@ class Login(Resource):
         access_token = create_access_token(identity=username, fresh=True)
         refresh_token = create_refresh_token(identity=username)
         user = {field_name: field_val for field_name, field_val
-                     in user.items() if field_name != 'password_hash'}
+                in user.items() if field_name != 'password_hash'}
         user = update_createdon(user)
         return {
             'status': 200,
