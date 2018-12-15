@@ -77,7 +77,7 @@ class CreateOrReturnIncidents(Resource):
 
 class SingleIncident(Resource):
     """
-    Implements methods for manipulating a particular record
+    Implements methods for manipulating a particular record with a given id.
     """
 
     @jwt_required
