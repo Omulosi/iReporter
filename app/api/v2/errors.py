@@ -1,13 +1,13 @@
 """
-    app.api.errors
+    app.api.v2.errors
     ~~~~~~~~~~~~~~~~~
 
-    Implements utility methods for handling error conditions
+    contains functions for handling error conditions
 
 """
 
-from flask import jsonify
 from app import jwt
+from flask import jsonify
 
 def raise_error(status_code, message):
     """
@@ -40,3 +40,12 @@ def expired_token_callback():
     an expired token
     """
     return raise_error(401, "Token has expired")
+
+@jwt.revoked_token_loader
+def revoked_token_callback():
+    """
+    Returns a custom error message when a user provides
+    an expired token
+    """
+    return raise_error(401, "Token has been revoked")
+

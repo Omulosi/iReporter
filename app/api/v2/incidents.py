@@ -8,7 +8,7 @@
 
 from flask_restful import Resource, reqparse, url_for
 from flask_jwt_extended import jwt_required, get_jwt_identity, fresh_jwt_required
-from app.api.errors import raise_error
+from .errors import raise_error
 from app.api.utils import (valid_location, valid_comment, valid_status,
                            update_createdon)
 from . import api_bp

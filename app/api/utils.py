@@ -8,8 +8,6 @@
 """
 
 import re
-from app import jwt
-from app.api.v2.models import Blacklist
 
 def valid_location(location):
     """
@@ -74,12 +72,4 @@ def update_createdon(data_item):
     data_item['createdon'] = data_item['createdon'].strftime('%a, %d %b %Y %H:%M %p')
     return data_item
 
-@jwt.token_in_blacklist_loader
-def check_if_token_in_blacklist(decrypted_token):
-    """
-    Takes a decoded jwt (dictionary).
-    Returns True if the token is blacklisted, False
-    otherwise
-    """
-    jti = decrypted_token['jti']
-    return Blacklist.is_blacklisted(jti)
+

@@ -9,9 +9,9 @@
 import functools as ft
 from flask_restful import request
 from flask_jwt_extended import get_jwt_identity
-from app.api.errors import raise_error
-from .models import Record, User
-
+from app import jwt
+from .errors import raise_error
+from .models import Record, User, Blacklist
 
 def parse_request_url_data(url):
     """"
@@ -49,7 +49,10 @@ def validate_before_update(func):
         Raises an appropriate error if any of the data is not
         valid.
         """
-        incident_type, _id, field = parse_request_url_data(request.path)
+        try:
+            incident_type, _id, field = parse_request_url_data(request.path)
+        except TypeError:
+            return raise_error(404, "url not found")
 
         username = get_jwt_identity()
         user = User.filter_by('username', username)[0]
@@ -70,3 +73,13 @@ def validate_before_update(func):
         return func(*args, **kwargs)
 
     return wrapper
+
+@jwt.token_in_blacklist_loader
+def check_if_token_in_blacklist(decrypted_token):
+    """
+    Takes a decoded jwt (dictionary).
+    Returns True if the token is blacklisted, False
+    otherwise
+    """
+    jti = decrypted_token['jti']
+    return Blacklist.is_blacklisted(jti)
