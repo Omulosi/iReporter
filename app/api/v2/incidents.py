@@ -8,7 +8,7 @@
 
 from flask_restful import Resource, reqparse, url_for
 from flask_jwt_extended import jwt_required, get_jwt_identity, fresh_jwt_required
-from app.api.errors import raise_error
+from .errors import raise_error
 from app.api.utils import (valid_location, valid_comment, valid_status,
                            update_createdon)
 from . import api_bp
@@ -144,7 +144,7 @@ class UpdateSingleIncident(Resource):
 
         def can_update(parser, field, data_validator):
             """
-            checks if field is valid
+            checks if field is valid and can thus be updated.
             """
             data_parser = parser.parse_args(strict=True)
             new_data = data_parser.get(field)

@@ -8,7 +8,6 @@
 from flask_restful import Resource, reqparse, url_for
 from . import api_bp
 from .models import Record
-from app.api.errors import raise_error
 from app.api.utils import valid_location, valid_comment
 
 #

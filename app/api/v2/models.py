@@ -70,7 +70,7 @@ class Base(db.Model):
 
     @classmethod
     def update(cls, _id, field, data):
-        """ 
+        """
         Given a field(string) and data,
         updates field with data.
         """
@@ -227,3 +227,26 @@ class User(Base):
         False otherwise.
         """
         return check_password_hash(password_hash, password)
+
+class Blacklist(Base):
+    """
+    Blacklist Model
+    """
+    def __init__(self, jti):
+        self.jti = jti
+
+    def put(self):
+        """
+        store token identifier in the database
+        """
+        query = """insert into blacklist (jti) values (%s);"""
+        self.query(query, (self.jti,))
+        self.commit()
+
+    @classmethod
+    def is_blacklisted(cls, jti):
+        """
+        Returns True if tokens jti is in the blacklist
+        """
+        cls.query("""select * from blacklist where jti = %s;""",(jti,))
+        return bool(cls.fetchall())

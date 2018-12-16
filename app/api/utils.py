@@ -1,5 +1,5 @@
 """
-    app.api.v2.utilities
+    app.api.utilities
     ~~~~~~~~~~~~~~~~~~
 
     This module contains general utility functions that help
@@ -40,7 +40,6 @@ def valid_status(status):
         return None
     return status
 
-
 def valid_username(username):
     """
     Username is not valid if it is empty, is not numeric
@@ -63,7 +62,6 @@ def valid_password(password):
     password = password.strip()
     return password if len(password) >= 5 else None
 
-
 def update_createdon(data_item):
     """
     updates the createdon field's datetime data into
@@ -73,3 +71,5 @@ def update_createdon(data_item):
     """
     data_item['createdon'] = data_item['createdon'].strftime('%a, %d %b %Y %H:%M %p')
     return data_item
+
+
