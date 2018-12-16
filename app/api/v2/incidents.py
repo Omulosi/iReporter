@@ -144,7 +144,7 @@ class UpdateSingleIncident(Resource):
 
         def can_update(parser, field, data_validator):
             """
-            checks if field is valid
+            checks if field is valid and can thus be updated.
             """
             data_parser = parser.parse_args(strict=True)
             new_data = data_parser.get(field)

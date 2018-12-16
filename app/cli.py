@@ -33,6 +33,13 @@ def register(app):
         Model.create_users_table()
 
     @db.command()
+    def create_blacklist():
+        """
+        Create a new blacklist table if one does not exist
+        """
+        Model.create_blacklist_table()
+
+    @db.command()
     def create_all():
         """
         Creates both a users table and a records table

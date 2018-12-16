@@ -22,6 +22,8 @@ class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY')
     JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY')
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=24)
+    JWT_BLACKLIST_ENABLED = True
+    JWT_BLACKLIST_TOKEN_CHECKS = ['access', 'refresh']
 
 class TestConfig(Config):
     TESTING = True

@@ -7,11 +7,12 @@
 """
 
 from flask_jwt_extended import (create_access_token, create_refresh_token, 
-                                jwt_refresh_token_required, get_jwt_identity)
+                                jwt_refresh_token_required, get_jwt_identity, 
+                                jwt_required, get_raw_jwt)
 from flask_restful import Resource, reqparse
+from app.api.utils import valid_email, valid_password, update_createdon, valid_username
 from app.api.errors import raise_error
-from app.api.utils import valid_username, valid_email, valid_password, update_createdon
-from .models import  User
+from .models import  User, Blacklist
 from . import api_bp
 
 
@@ -132,6 +133,44 @@ class RefreshToken(Resource):
                      }]
             }
 
+class LogoutAccess(Resource):
+    """
+    Endpoint for logging out a user
+    """
+
+    @jwt_required
+    def delete(self):
+        """
+        Revokes the current user's access token
+        """
+        # jti: json token identifier (unique identifier)
+        jti = get_raw_jwt()['jti']
+        blacklist = Blacklist(jti=jti)
+        blacklist.put() # store jti in the database
+        return {
+            "status": 200,
+            "message":"successfully logged out"
+            }
+
+class LogoutRefresh(Resource):
+    """
+    Endpoint for logging out a user
+    """
+
+    @jwt_refresh_token_required
+    def delete(self):
+        """
+        Revokes the current user's refresh token
+        """
+        # jti: json token identifier (unique identifier)
+        jti = get_raw_jwt()['jti']
+        blacklist = Blacklist(jti=jti)
+        blacklist.put() # store jti in the database
+        return {
+                "status": 200,
+                "message":"successfully logged out"
+                }
+
 #
 #
 # API resource routing
@@ -140,3 +179,5 @@ class RefreshToken(Resource):
 api_bp.add_resource(SignUp, '/auth/signup', endpoint='signup')
 api_bp.add_resource(Login, '/auth/login', endpoint='login')
 api_bp.add_resource(RefreshToken, '/auth/refresh', endpoint='refresh')
+api_bp.add_resource(LogoutAccess, '/auth/logout', endpoint='logout_access')
+api_bp.add_resource(LogoutRefresh, '/auth/refresh/logout', endpoint='logout_refresh')

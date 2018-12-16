@@ -11,6 +11,11 @@ from psycopg2.extras import RealDictCursor
 from instance.config import Config
 
 class Model(object):
+    """
+    Represents base database model that connects the
+    database and provides some common utility
+    functionalities for interacting with the database
+    """
 
     connect_str = "dbname='{}' user='{}' host='{}' password='{}'".format(
         Config.DBNAME, Config.USERNAME, Config.HOST, Config.PASSWORD)
@@ -21,23 +26,38 @@ class Model(object):
 
     @classmethod
     def close_connection(cls):
+        """
+        closes the db connection
+        """
         cls.conn.close()
 
     @classmethod
     def commit(cls):
+        """
+        commits the transaction to persist changes in the database
+        """
         cls.conn.commit()
 
     @classmethod
     def query(cls, sql, params=None):
+        """
+        generic query method
+        """
         cls.cursor.execute(sql, params or ())
 
 
     @classmethod
     def fetchall(cls):
+        """
+        fetches all data
+        """
         return cls.cursor.fetchall()
 
     @classmethod
     def fetchone(cls):
+        """
+        fetches a single data item
+        """
         cls.cursor.fetchone()
 
     @classmethod
@@ -56,7 +76,7 @@ class Model(object):
         """
         Returns list containing all comments each in a dictionary
         format.
-        """ 
+        """
         sql = "select comment from records order by createdon desc;"
         cls.query(sql)
         return cls.fetchall()
@@ -98,6 +118,18 @@ class Model(object):
             phoneNumber varchar(100) not null,
             isAdmin boolean not null,
             password_hash varchar(100) not null
+            );
+            """)
+        cls.commit()
+
+    @classmethod
+    def create_blacklist_table(cls):
+        """
+        Create the blacklist table
+        """
+        cls.cursor.execute("""create table if not exists blacklist (
+            id serial primary key,
+            jti varchar(140) not null
             );
             """)
         cls.commit()

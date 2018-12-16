@@ -1,5 +1,5 @@
 """
-    app.api.v2.utilities
+    app.api.utilities
     ~~~~~~~~~~~~~~~~~~
 
     This module contains general utility functions that help
@@ -8,6 +8,8 @@
 """
 
 import re
+from app import jwt
+from app.api.v2.models import Blacklist
 
 def valid_location(location):
     """
@@ -40,7 +42,6 @@ def valid_status(status):
         return None
     return status
 
-
 def valid_username(username):
     """
     Username is not valid if it is empty, is not numeric
@@ -63,7 +64,6 @@ def valid_password(password):
     password = password.strip()
     return password if len(password) >= 5 else None
 
-
 def update_createdon(data_item):
     """
     updates the createdon field's datetime data into
@@ -73,3 +73,13 @@ def update_createdon(data_item):
     """
     data_item['createdon'] = data_item['createdon'].strftime('%a, %d %b %Y %H:%M %p')
     return data_item
+
+@jwt.token_in_blacklist_loader
+def check_if_token_in_blacklist(decrypted_token):
+    """
+    Takes a decoded jwt (dictionary).
+    Returns True if the token is blacklisted, False
+    otherwise
+    """
+    jti = decrypted_token['jti']
+    return Blacklist.is_blacklisted(jti)
