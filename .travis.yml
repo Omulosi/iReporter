@@ -9,6 +9,9 @@ services:
 before_script:
         - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
         - chmod +x ./cc-test-reporter
+        - psql -c 'create database testing_db;' -U postgres
+        - psql -c "create user jp with password cavier;" -U postgres
+        - flask db create-all
 install:
         - pip install flask
         - pip install pytest

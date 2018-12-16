@@ -14,12 +14,12 @@ class Model(object):
     """
     Represents base database model that connects the
     database and provides some common utility
-    functionalities for interacting with the database
+    functionalities for interacting with it
     """
 
-    connect_str = "dbname='{}' user='{}' host='{}' password='{}'".format(
-        Config.DBNAME, Config.USERNAME, Config.HOST, Config.PASSWORD)
-    # use our connection values to establish a connection
+    # connect_str = "dbname='{}' user='{}' host='{}' password='{}'".format(
+    #     Config.DBNAME, Config.USERNAME, Config.HOST, Config.PASSWORD)
+    connect_str = "dbname='testing_db' user='jp' host='localhost' password='cavier'"
     conn = psycopg2.connect(connect_str)
     # create a psycopg2 cursor that can execute queries
     cursor = conn.cursor(cursor_factory=RealDictCursor)

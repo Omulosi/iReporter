@@ -46,6 +46,7 @@ def register(app):
         """
         Model.create_users_table()
         Model.create_records_table()
+        Model.create_blacklist_table()
 
     @db.command()
     def clear_all():
