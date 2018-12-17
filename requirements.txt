@@ -1,6 +1,7 @@
 aniso8601==4.0.1
 atomicwrites==1.2.1
 attrs==18.2.0
+blinker==1.4
 certifi==2018.11.29
 chardet==3.0.4
 Click==7.0
@@ -10,6 +11,7 @@ coveralls==1.5.1
 docopt==0.6.2
 Flask==1.0.2
 Flask-JWT-Extended==3.14.0
+Flask-Mail==0.9.1
 Flask-RESTful==0.3.6
 gunicorn==19.9.0
 httpie==1.0.2
