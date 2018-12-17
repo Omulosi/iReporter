@@ -13,6 +13,7 @@ from app.api.utils import (valid_location, valid_comment, valid_status,
                            update_createdon)
 from . import api_bp
 from .models import Record, User
+#from app.db import Record, User
 from .decorators import validate_before_update
 
 
@@ -67,7 +68,7 @@ class CreateOrReturnIncidents(Resource):
                         _type=incident_type, user_id=int(user_id))
         record.put()
         record_id = Record.get_last_inserted_id()
-        uri = url_for('v2.incident', incident_type=incident_type, _id=record_id, _external=True)
+        uri = url_for('v2.incident', incident_type=incident_type + 's', _id=record_id, _external=True)
         Record.update(record_id, 'uri', uri)
         output = {}
         output['id'] = record_id
@@ -144,7 +145,7 @@ class UpdateSingleIncident(Resource):
 
         def can_update(parser, field, data_validator):
             """
-            checks if field is valid and can thus be updated.
+            checks if field is valid and thus can be updated.
             """
             data_parser = parser.parse_args(strict=True)
             new_data = data_parser.get(field)
