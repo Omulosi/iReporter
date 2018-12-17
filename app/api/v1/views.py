@@ -8,7 +8,7 @@
 from flask_restful import Resource, reqparse, url_for
 from . import api_bp
 from .models import Record
-from app.api.utils import valid_location, valid_comment
+from app.api.utils import valid_location, valid_comment, raise_error
 
 #
 # Input validation functions
@@ -126,7 +126,8 @@ class UpdateSingleRedflag(Resource):
             record.location = new_location
         elif field == 'comment':
             comment_data = self.comment_parser.parse_args(strict=True)
-            if not valid_comment(comment_data):
+            new_comment = comment_data.get('comment')
+            if not valid_comment(new_comment):
                 return raise_error(400, 'comment field should not be empty')
             record.comment = comment_data
         Record.put(record)
