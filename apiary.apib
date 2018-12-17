@@ -1,0 +1,330 @@
+FORMAT: 1A
+HOST: http://polls.apiblueprint.org/
+
+# iReporter API
+
+iReporter API is a web service that provides API endpoints for clients 
+to create, view edit and delete incident records. An incident record 
+can either be a **red-flag**(an incident linked to corruption) or an
+**intervention** (a call for  government agency to intervene).
+
+
+Add an  'Authentication:Bearer <jwt>' header to each request as all
+endpoints are protected.
+
+## SignUp [/api/v2/auth/signup]
+
+### Signup a user [POST]
+
+You can signup by  providing your username and password (mandatory)
+and optionally provide such values as your *email*, *phone number*, 
+*firstname* or *lastname*. The response is a jwt token that will be used
+authentication and authorization in the API to uniquely identify the user.
+
++ Response 201 (application/json)
+
+        {
+            "data": [
+                {
+                    "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6dHJ1ZSwianRpIjoiY2MwYjgyY2UtNTAyNi00OGYyLWJjY2EtMjk1ZTU0NGEzY2IxIiwiaWF0IjoxNTQ1MDE3OTQ3LCJ0eXBlIjoiYWNjZXNzIiwiaWRlbnRpdHkiOiJhcnNlbmUiLCJleHAiOjE1NDUxMDQzNDcsIm5iZiI6MTU0NTAxNzk0N30.skToUFYBN8C5ityOiFkwh9GaBb2yYzyeUklUl7RHxoY",
+                    "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJmYTk1ZDk2Yi1jMjg1LTQ4MmItOWU4OS1lOGEzODE2ZWFlYWYiLCJpYXQiOjE1NDUwMTc5NDcsInR5cGUiOiJyZWZyZXNoIiwiaWRlbnRpdHkiOiJhcnNlbmUiLCJleHAiOjE1NDc2MDk5NDcsIm5iZiI6MTU0NTAxNzk0N30.lXo9ynTIX70DTe7h5odh8zY8gCaYLL4fgcR2xxlux6s",
+                    "user": {
+                        "email": "",
+                        "firstname": "",
+                        "isAdmin": false,
+                        "lastname": "",
+                        "othernames": "",
+                        "phoneNumber": "",
+                        "registered": "Mon, 17 Dec 2018 03:39 AM",
+                        "username": "arsene"
+                    }
+                }
+            ],
+            "status": 201
+        }
+
+## Login [/api/v2/auth/login]
+
+### Login a user [POST]
+
+To login, provide a username and a password. The response is a jwt token
+used for authentication and authorization.
+
++ Response 201 (application/json)
+
+        {
+            "data": [
+                {
+                    "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6dHJ1ZSwianRpIjoiY2MwYjgyY2UtNTAyNi00OGYyLWJjY2EtMjk1ZTU0NGEzY2IxIiwiaWF0IjoxNTQ1MDE3OTQ3LCJ0eXBlIjoiYWNjZXNzIiwiaWRlbnRpdHkiOiJhcnNlbmUiLCJleHAiOjE1NDUxMDQzNDcsIm5iZiI6MTU0NTAxNzk0N30.skToUFYBN8C5ityOiFkwh9GaBb2yYzyeUklUl7RHxoY",
+                    "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJmYTk1ZDk2Yi1jMjg1LTQ4MmItOWU4OS1lOGEzODE2ZWFlYWYiLCJpYXQiOjE1NDUwMTc5NDcsInR5cGUiOiJyZWZyZXNoIiwiaWRlbnRpdHkiOiJhcnNlbmUiLCJleHAiOjE1NDc2MDk5NDcsIm5iZiI6MTU0NTAxNzk0N30.lXo9ynTIX70DTe7h5odh8zY8gCaYLL4fgcR2xxlux6s",
+                    "user": {
+                        "email": "",
+                        "firstname": "",
+                        "isAdmin": false,
+                        "lastname": "",
+                        "othernames": "",
+                        "phoneNumber": "",
+                        "registered": "Mon, 17 Dec 2018 03:39 AM",
+                        "username": "arsene"
+                    }
+                }
+            ],
+            "status": 201
+        }
+
+## Intervention Item [/api/v2/interventions/{id}]
+
+### List One Intervention [GET]
+
+Fetches a specific intervention record. Add an  'Authentication:Bearer <jwt>' 
+header to the request to be able to access this endpoint.
+
++ Response 200 (application/json)
+
+   
+        {
+            "data": {
+                "comment": "selfish",
+                "createdby": 1,
+                "createdon": "Mon, 17 Dec 2018 03:43 AM",
+                "id": 1,
+                "images": [],
+                "location": "23,34",
+                "status": "Draft",
+                "type": "intervention",
+                "uri": "http://127.0.0.1:5000/api/v2/interventions/1",
+                "user_id": 1,
+                "videos": []
+            },
+            "status": 200
+        }
+
+### Delete an Intervention [DELETE]
+
+Deletes a specific intervention record.
+
++ Request (application/json)
+
+        http POST http://127.0.0.1:5000/api/v2/interventions comment='selfish' location='23,34' "Authorization:Bearer $A"
+
+
++ Response 201 (application/json)
+
+            
+    + Body
+
+            {
+                "data": [
+                    {
+                        "id": "1",
+                        "message": "interventions has been deleted"
+                    }
+                ],
+                "status": 200
+            }
+
+            For erroneous responses we get the response below
+
++ Response 404 (application/json)
+
+            
+    + Body
+
+            {
+                "error": "intervention does not exist",
+                "status": 404
+            }
+           
+## Update Intervention [/api/v2/interventions/{id}/status]
+
+### Update location/comment/status of an intervention [PATCH]
+
+Edits the location ,status or comment fields of an intervention record.
+Only the user who created the intervention can edit its location or
+comment field. Other users are forbidden. In addition, the location and
+comment should contain valid data i.e the comment should not be empty
+and the location should have 'lat, long' format and stick to valid
+ranges.
+
+Also edits the status record. A record can either be a red-flag or an 
+intervention record. This action is only permitted for an admin.
+All the other users are forbidden to update their records. Valid status updates
+can only be one of **resolved**, **unreseolved** or **under investigation**.
+
+
++ Request
+
+            http PATCH http://127.0.0.1:5000/api/v2/interventions/2/location "Authorization:Bearer $A"
+
++ Response 400 (application/json)
+
+      
+            {
+                "message": {
+                    "location": "location not provided"
+                }
+            }
+
++ Request
+
+            http PATCH http://127.0.0.1:5000/api/v2/interventions/2/location "Authorization:Bearer $A"
+
++ Response 400 (application/json)
+      
+       
+            {
+                "error": "Invalid location. Either it is empty,does not conform to 'lat, long' formator exceeds valid ranges(+/- 90, +/- 180)",
+                "status": 400
+            }
+        
+        
++ Request
+
+            http PATCH http://127.0.0.1:5000/api/v2/interventions/2/location "Authorization:Bearer $A"
+
++ Response 400 (application/json)
+      
+           
+            {
+                "error": "Invalid location. Either it is empty,does not conform to 'lat, long' formator exceeds valid ranges(+/- 90, +/- 180)",
+                "status": 400
+            }
+            
++ Request
+
+            http PATCH http://127.0.0.1:5000/api/v2/interventions/2/location location='nairobi' "Authorization:Bearer $A"
+
++ Response 400 (application/json)
+
+            {
+                "error": "Invalid location. Either it is empty,does not conform to 'lat, long' formator exceeds valid ranges(+/- 90, +/- 180)",
+                "status": 400
+            }
+
+        
++ Request
+    
+            http PATCH http://127.0.0.1:5000/api/v2/interventions/2/location location='-1, 36' "Authorization:Bearer $A"
+    
++ Response 200(application/json)
+
+            {
+                "data": [
+                    {
+                        "id": "2",
+                        "message": "Updated interventions record's location"
+                    }
+                ],
+                "status": 200
+            }
+            
++ Request
+    
+            http PATCH http://127.0.0.1:5000/api/v2/interventions/2/comment comment='bribery is rife' "Authorization:Bearer $A"
+    
++ Response  200 (application/json)
+
+            {
+                "data": [
+                    {
+                        "id": "2",
+                        "message": "Updated interventions record's comment"
+                    }
+                ],
+                "status": 200
+            }
+            
++ Request
+    
+            http PATCH http://127.0.0.1:5000/api/v2/interventions/2/comment comment='  ' "Authorization:Bearer $A"
+    
++ Response  400 (application/json)
+
+            {
+                "error": "comment field should not be empty",
+                "status": 400
+            }
+            
+
+            This user is not an admin
+
++ Request
+
+            http PATCH http://127.0.0.1:5000/api/v2/interventions/2/status  status='resolved' "Authorization:Bearer $A"
+
++ Response 403 (application/json)
+
+      
+            {
+                "error": "Request forbidden",
+                "status": 403
+            }
+
+
+
++ Request
+
+        http PATCH http://127.0.0.1:5000/api/v2/interventions/2/status  status='resolved' "Authorization:Bearer $ADMIN"
+
++ Response 403 (application/json)
+
+           {
+                "data": [
+                    {
+                        "id": "2",
+                        "message": "Updated interventions record's status"
+                    }
+                ],
+                "status": 200
+            }
+            
+## Interventions from a specific user [/api/v2/users/{id}/interventions]
+
+### List Interventions from a specific user [GET]
+
+Fetches all intervention records created by a specific user. 
+
++ Request
+
+            http GET http://127.0.0.1:5000/api/v2/users/1/interventions  "Authorization:Bearer $D
+
++ Response 200 (application/json)
+
+            
+            {
+                "data": [
+                    {
+                        "comment": "bribery is rife",
+                        "createdby": 1,
+                        "createdon": "Mon, 17 Dec 2018 03:48 AM",
+                        "id": 2,
+                        "images": [],
+                        "location": "-1, 36",
+                        "status": "resolved",
+                        "type": "intervention",
+                        "uri": "http://127.0.0.1:5000/api/v2/interventions/2",
+                        "user_id": 1,
+                        "videos": []
+                    }
+                ],
+                "status": 200
+            }
+
+
+   
+        {
+            "data": {
+                "comment": "selfish",
+                "createdby": 1,
+                "createdon": "Mon, 17 Dec 2018 03:43 AM",
+                "id": 1,
+                "images": [],
+                "location": "23,34",
+                "status": "Draft",
+                "type": "intervention",
+                "uri": "http://127.0.0.1:5000/api/v2/interventions/1",
+                "user_id": 1,
+                "videos": []
+            },
+            "status": 200
+        }

@@ -19,7 +19,13 @@ class Model(object):
 
     # db_url = "dbname='{}' user='{}' host='{}' password='{}'".format(
     #     Config.DBNAME, Config.USERNAME, Config.HOST, Config.PASSWORD)
+<<<<<<< HEAD
     db_url = "dbname='d8of8ak14m7p81' user='punqltmbsqtpsw' port='5432' host='ec2-54-83-197-230.compute-1.amazonaws.com' password='c652f0096c404d647f495134557b12d4bdf8c0b6db98cc94bae64ae7c8857719'"
+=======
+    db_url = "dbname='testdb' user='jp' host='localhost' password='cavier'"
+
+
+>>>>>>> e4f176f377470c1fa5a8b8d2902f1d3622f33497
     conn = psycopg2.connect(db_url)
     # create a psycopg2 cursor that can execute queries
     cursor = conn.cursor(cursor_factory=RealDictCursor)

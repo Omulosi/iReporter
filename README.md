@@ -1,8 +1,7 @@
 # iReporter API
-[![Build Status](https://travis-ci.com/Omulosi/iReporter.svg?branch=bg-fix-delete-endpoint-162660020)](https://travis-ci.com/Omulosi/iReporter)
-[![codecov](https://codecov.io/gh/Omulosi/iReporter/branch/bg-fix-delete-endpoint-162660020/graph/badge.svg)](https://codecov.io/gh/Omulosi/iReporter)
+[![Build Status](https://travis-ci.com/Omulosi/iReporter.svg?branch=develop)](https://travis-ci.com/Omulosi/iReporter)
+[![codecov](https://codecov.io/gh/Omulosi/iReporter/branch/develop/graph/badge.svg)](https://codecov.io/gh/Omulosi/iReporter)
 [![Maintainability](https://api.codeclimate.com/v1/badges/2cfcccc9d11dacc989c3/maintainability)](https://codeclimate.com/github/Omulosi/iReporter/maintainability)
-[![Test Coverage](https://api.codeclimate.com/v1/badges/2cfcccc9d11dacc989c3/test_coverage)](https://codeclimate.com/github/Omulosi/iReporter/test_coverage)
 
 
 iReporter API is a web service that provides API endpoints for clients to create, view edit and delete incident records. An incident record can either be a **red-flag**(an incident linked to corruption) or an **intervention** (a call for  government agency to intervene).
@@ -151,6 +150,6 @@ for more information, checkout the documentation
 
 # Documentation
 
-[view v1 documentation of the API]()
+[view v1 documentation of the API](https://ireporter3.docs.apiary.io/#reference)
 
-[view v2 documentation of the API]()
+[view v2 documentation of the API]((https://ireporterv22.docs.apiary.io/))

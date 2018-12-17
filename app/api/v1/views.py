@@ -8,7 +8,7 @@
 from flask_restful import Resource, reqparse, url_for
 from . import api_bp
 from .models import Record
-from app.api.utils import valid_location, valid_comment, raise_error
+from app.api.utils import valid_location, valid_comment, can_update, raise_error
 
 #
 # Input validation functions
@@ -117,19 +117,24 @@ class UpdateSingleRedflag(Resource):
         if record is None:
             return raise_error(404, "Record does not exist")
         if field == 'location':
-            location_data = self.location_parser.parse_args(strict=True)
-            new_location = location_data.get('location')
-            if not new_location:
-                return raise_error(400, 'location field should not be empty')
-            if not valid_location(new_location):
-                return raise_error(400, 'location field has invalid format')
-            record.location = new_location
+            error_msg = 'location field invalid'
+            parser, data_validator = self.location_parser, valid_location
+            # location_data = self.location_parser.parse_args(strict=True)
+            # new_location = location_data.get('location')
+            # if not valid_location(new_location):
+            #     return raise_error(400, 'location field is invalid')
+            # record.location = new_location
         elif field == 'comment':
-            comment_data = self.comment_parser.parse_args(strict=True)
-            new_comment = comment_data.get('comment')
-            if not valid_comment(new_comment):
-                return raise_error(400, 'comment field should not be empty')
-            record.comment = comment_data
+            error_msg = 'comment field should not be empty'
+            parser, data_validator = self.comment_parser, valid_comment
+            # comment_data = self.comment_parser.parse_args(strict=True)
+            # if not valid_comment(comment_data):
+            #     return raise_error(400, 'comment field should not be empty')
+            # record.comment = comment_data
+
+        new_data = can_update(parser, field, data_validator)
+        if not new_data:
+            return raise_error(400, error_msg)
         Record.put(record)
         output = {}
         output['status'] = 200
