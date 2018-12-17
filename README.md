@@ -152,4 +152,4 @@ for more information, checkout the documentation
 
 [view v1 documentation of the API](https://ireporter3.docs.apiary.io/#reference)
 
-[view v2 documentation of the API]()
+[view v2 documentation of the API]((https://ireporterv22.docs.apiary.io/))
