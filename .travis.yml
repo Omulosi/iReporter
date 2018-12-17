@@ -22,10 +22,11 @@ install:
         - pip install python-dotenv
         - pip install psycopg2-binary
         - pip install flask_jwt_extended
+        - pip install flask-mail
 script:
         - pytest --cov=./app/tests/v2/
 after_success:
         - codecov
         - coveralls
         - codeclimate-test-reporter
-        - /cc-test-reporter
+        - ./cc-test-reporter
