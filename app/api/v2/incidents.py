@@ -9,11 +9,12 @@
 from flask_restful import Resource, reqparse, url_for
 from flask_jwt_extended import jwt_required, get_jwt_identity, fresh_jwt_required
 from app.api.utils import (valid_location, valid_comment, valid_status,
-                           update_createdon, raise_error)
+                           update_createdon, raise_error, can_update)
 from . import api_bp
 from .models import Record, User
-#from app.db import Record, User
 from .decorators import validate_before_update
+from app.email import send_email
+import logging
 
 
 class CreateOrReturnIncidents(Resource):
@@ -142,14 +143,6 @@ class UpdateSingleIncident(Resource):
         Updates the specified field (location, comment or status)
         """
 
-        def can_update(parser, field, data_validator):
-            """
-            checks if field is valid and thus can be updated.
-            """
-            data_parser = parser.parse_args(strict=True)
-            new_data = data_parser.get(field)
-            return data_validator(new_data)
-
         if field == 'location':
             error_msg = ("Invalid location. Either it is empty,"
                          "does not conform to 'lat, long' format"
@@ -174,6 +167,14 @@ class UpdateSingleIncident(Resource):
         msg = "Updated " + incident_type + " record's " + field
         output['status'] = 200
         output['data'] = [{"id": _id, "message": msg}]
+        if field == 'status':
+            record = Record.by_id(int(_id))
+            u_id = record[0].get('createdby')
+            user = User.by_id(u_id)[0]
+            user_email = user.get('email')
+            msg = msg + ' to ' + new_data
+            if user_email:
+                send_email("Status Update",'mulongojohnpaul@gmail.com', [user_email], msg)
         return output
 
 class ReturnUserIncidents(Resource):

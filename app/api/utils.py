@@ -88,3 +88,12 @@ def make_token_header(token):
     token
     """
     return {'Authorization': 'Bearer {}'.format(token)}
+
+
+def can_update(parser, field, data_validator):
+    """
+    checks if field is valid and thus can be updated.
+    """
+    data_parser = parser.parse_args(strict=True)
+    new_data = data_parser.get(field)
+    return data_validator(new_data)
