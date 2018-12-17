@@ -8,9 +8,8 @@
 
 from flask_restful import Resource, reqparse, url_for
 from flask_jwt_extended import jwt_required, get_jwt_identity, fresh_jwt_required
-from .errors import raise_error
 from app.api.utils import (valid_location, valid_comment, valid_status,
-                           update_createdon)
+                           update_createdon, raise_error)
 from . import api_bp
 from .models import Record, User
 #from app.db import Record, User

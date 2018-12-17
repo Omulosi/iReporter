@@ -10,7 +10,7 @@ import functools as ft
 from flask_restful import request
 from flask_jwt_extended import get_jwt_identity
 from app import jwt
-from .errors import raise_error
+from app.api.utils import raise_error
 from .models import Record, User, Blacklist
 
 def parse_request_url_data(url):

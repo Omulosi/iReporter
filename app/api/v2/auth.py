@@ -10,10 +10,8 @@ from flask_jwt_extended import (create_access_token, create_refresh_token,
                                 jwt_refresh_token_required, get_jwt_identity,
                                 jwt_required, get_raw_jwt)
 from flask_restful import Resource, reqparse
-from app.api.utils import valid_email, valid_password, update_createdon, valid_username
-from .errors import raise_error
+from app.api.utils import (valid_email, valid_password, update_createdon, valid_username, raise_error)
 from .models import  User, Blacklist
-#from app.db import User, Blacklist
 from . import api_bp
 
 
