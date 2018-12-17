@@ -24,7 +24,7 @@ install:
         - pip install flask_jwt_extended
         - pip install flask-mail
 script:
-        - pytest --cov=./app/tests/v2/
+        - pytest --cov=./app/tests/v2
 after_success:
         - codecov
         - coveralls
