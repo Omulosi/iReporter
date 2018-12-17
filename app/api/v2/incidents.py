@@ -168,11 +168,13 @@ class UpdateSingleIncident(Resource):
         output['status'] = 200
         output['data'] = [{"id": _id, "message": msg}]
         if field == 'status':
-            username = get_jwt_identity()
-            user = User.filter_by('username', username)[0]
+            record = Record.by_id(int(_id))
+            u_id = record[0].get('createdby')
+            user = User.by_id(u_id)[0]
             user_email = user.get('email')
+            msg = msg + ' to ' + new_data
             if user_email:
-                send_email("Status Update", 'mulongojohnpaul@gmail.com', user_email, msg)
+                send_email("Status Update",'mulongojohnpaul@gmail.com', [user_email], msg)
         return output
 
 class ReturnUserIncidents(Resource):

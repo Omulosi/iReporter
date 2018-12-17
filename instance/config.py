@@ -25,13 +25,13 @@ class Config:
     JWT_BLACKLIST_ENABLED = True
     JWT_BLACKLIST_TOKEN_CHECKS = ['access', 'refresh']
     PROPAGATE_EXCEPTIONS = True
-    # MAIL_SERVER=localhost
-    # MAIL_PORT=25
-    MAIL_SERVER='smtp.googlemail.com'
-    MAIL_PORT=587
-    MAIL_USE_TLS=1
-    MAIL_USERNAME='mulongojohnpaul@gmail.com'
-    MAIL_PASSWORD='kleptomaniacs.9000'
+    MAIL_SERVER=os.environ.get('MAIL_SERVER')
+    MAIL_PORT=os.environ.get('MAIL_PORT')
+    # MAIL_SERVER='smtp.googlemail.com'
+    # MAIL_PORT=587
+    # MAIL_USE_TLS=1
+    # MAIL_USERNAME='mulongojohnpaul@gmail.com'
+    # MAIL_PASSWORD=''
 
 class TestConfig(Config):
     TESTING = True
