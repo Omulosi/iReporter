@@ -29,4 +29,3 @@ after_success:
         - codecov
         - coveralls
         - codeclimate-test-reporter
-        - ./cc-test-reporter
