@@ -27,11 +27,9 @@ class Config:
     PROPAGATE_EXCEPTIONS = True
     MAIL_SERVER=os.environ.get('MAIL_SERVER')
     MAIL_PORT=os.environ.get('MAIL_PORT')
-    # MAIL_SERVER='smtp.googlemail.com'
-    # MAIL_PORT=587
-    # MAIL_USE_TLS=1
-    # MAIL_USERNAME='mulongojohnpaul@gmail.com'
-    # MAIL_PASSWORD=''
+    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
+    MAIL_USE_TLS=os.environ.get('MAIL_USE_TLS')
+    MAIL_USERNAME=os.environ.get('MAIL_USERNAME')
 
 class TestConfig(Config):
     TESTING = True

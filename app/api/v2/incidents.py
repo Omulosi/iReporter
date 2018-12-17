@@ -10,12 +10,10 @@ from flask_restful import Resource, reqparse, url_for
 from flask_jwt_extended import jwt_required, get_jwt_identity, fresh_jwt_required
 from app.api.utils import (valid_location, valid_comment, valid_status,
                            update_createdon, raise_error, can_update)
+from app.email import send_email
 from . import api_bp
 from .models import Record, User
 from .decorators import validate_before_update
-from app.email import send_email
-import logging
-
 
 class CreateOrReturnIncidents(Resource):
     """
@@ -68,7 +66,8 @@ class CreateOrReturnIncidents(Resource):
                         _type=incident_type, user_id=int(user_id))
         record.put()
         record_id = Record.get_last_inserted_id()
-        uri = url_for('v2.incident', incident_type=incident_type + 's', _id=record_id, _external=True)
+        uri = url_for('v2.incident',
+                      incident_type=incident_type + 's', _id=record_id, _external=True)
         Record.update(record_id, 'uri', uri)
         output = {}
         output['id'] = record_id
@@ -174,7 +173,7 @@ class UpdateSingleIncident(Resource):
             user_email = user.get('email')
             msg = msg + ' to ' + new_data
             if user_email:
-                send_email("Status Update",'mulongojohnpaul@gmail.com', [user_email], msg)
+                send_email("Status Update", 'mulongojohnpaul@gmail.com', [user_email], msg)
         return output
 
 class ReturnUserIncidents(Resource):

@@ -161,14 +161,14 @@ class LogoutRefresh(Resource):
         """
         Revokes the current user's refresh token
         """
-        # jti: json token identifier (unique identifier)
+        # jti: json token identifier
         jti = get_raw_jwt()['jti']
         blacklist = Blacklist(jti=jti)
         blacklist.put() # store jti in the database
         return {
-                "status": 200,
-                "message":"successfully logged out"
-                }
+            "status": 200,
+            "message":"successfully logged out"
+            }
 
 #
 #
