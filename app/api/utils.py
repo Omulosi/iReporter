@@ -1,5 +1,5 @@
 """
-    app.api.utilities
+    app.api.utils
     ~~~~~~~~~~~~~~~~~~
 
     This module contains general utility functions that help
@@ -8,6 +8,16 @@
 """
 
 import re
+from flask import jsonify
+
+def raise_error(status_code, message):
+    """
+    Returns a template for generating a custom error message
+    """
+    response = jsonify({"status": status_code,
+                        "error": message})
+    response.status_code = status_code
+    return response
 
 def valid_location(location):
     """
@@ -42,7 +52,7 @@ def valid_status(status):
 
 def valid_username(username):
     """
-    Username is not valid if it is empty, is not numeric
+    Username is not valid if it is empty, is numeric only
     or is composed of whitespaces only.
     """
     pattern = re.compile(r"^[a-zA-Z][\w]{3,}")
@@ -72,4 +82,9 @@ def update_createdon(data_item):
     data_item['createdon'] = data_item['createdon'].strftime('%a, %d %b %Y %H:%M %p')
     return data_item
 
-
+def make_token_header(token):
+    """
+    creates an authorization header given a
+    token
+    """
+    return {'Authorization': 'Bearer {}'.format(token)}

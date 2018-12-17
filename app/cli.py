@@ -44,9 +44,7 @@ def register(app):
         """
         Creates both a users table and a records table
         """
-        Model.create_users_table()
-        Model.create_records_table()
-        Model.create_blacklist_table()
+        Model.create_all_tables()
 
     @db.command()
     def clear_all():

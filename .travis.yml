@@ -9,13 +9,13 @@ services:
 before_script:
         - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
         - chmod +x ./cc-test-reporter
-        - psql -c 'create database testing_db;' -U postgres
-        - psql -c "create user jp with password cavier;" -U postgres
+        - psql -c 'create database testdb;' -U postgres
+        - psql -c "create user jp with password 'cavier';" -U postgres
         - flask db create-all
 install:
         - pip install flask
         - pip install pytest
-        - pip install pytest-cov 
+        - pip install pytest-cov
         - pip install flask_restful
         - pip install coveralls
         - pip install codecov
@@ -23,10 +23,9 @@ install:
         - pip install psycopg2-binary
         - pip install flask_jwt_extended
 script:
-        - py.test --cov-report term-missing --cov=/app/tests/
+        - pytest --cov=./app/tests/v2/
 after_success:
         - codecov
         - coveralls
-        - ./cc-test-reporter
         - codeclimate-test-reporter
-
+        - /cc-test-reporter

@@ -110,6 +110,7 @@ class Record(Base):
         self.images = images or []
         self.videos = videos or []
         self.uri = uri or ''
+        super(Record, self).__init__()
 
     def put(self):
         """
@@ -171,6 +172,7 @@ class User(Base):
         self.othernames = othernames or ''
         self.phone_number = phone_number or ''
         self.isadmin = isadmin or False
+        super(User, self).__init__()
 
     def put(self):
         """

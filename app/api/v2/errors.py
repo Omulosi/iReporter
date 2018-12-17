@@ -7,16 +7,7 @@
 """
 
 from app import jwt
-from flask import jsonify
-
-def raise_error(status_code, message):
-    """
-    Returns a template for generating a custom error message
-    """
-    response = jsonify({"status": status_code,
-                        "error": message})
-    response.status_code = status_code
-    return response
+from app.api.utils import raise_error
 
 @jwt.invalid_token_loader
 def invalid_token_callback(error_msg):
@@ -48,4 +39,3 @@ def revoked_token_callback():
     an expired token
     """
     return raise_error(401, "Token has been revoked")
-

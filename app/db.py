@@ -17,10 +17,10 @@ class Model(object):
     functionalities for interacting with it
     """
 
-    # connect_str = "dbname='{}' user='{}' host='{}' password='{}'".format(
+    # db_url = "dbname='{}' user='{}' host='{}' password='{}'".format(
     #     Config.DBNAME, Config.USERNAME, Config.HOST, Config.PASSWORD)
-    connect_str = "dbname='testing_db' user='jp' host='localhost' password='cavier'"
-    conn = psycopg2.connect(connect_str)
+    db_url = "dbname='testdb' user='jp' host='localhost' password='cavier'"
+    conn = psycopg2.connect(db_url)
     # create a psycopg2 cursor that can execute queries
     cursor = conn.cursor(cursor_factory=RealDictCursor)
 
@@ -141,6 +141,7 @@ class Model(object):
         """
         cls.cursor.execute("""delete from records;""")
         cls.cursor.execute("""delete from users;""")
+        cls.cursor.execute("""delete from blacklist;""")
         cls.commit()
 
     @classmethod
@@ -159,7 +160,17 @@ class Model(object):
         """
         cls.cursor.execute("""drop table records;""")
         cls.cursor.execute("""drop table users;""")
+        cls.cursor.execute("""drop table blacklist;""")
         cls.commit()
+
+    @classmethod
+    def create_all_tables(cls):
+        """
+        Deletes all tables
+        """
+        cls.create_users_table()
+        cls.create_records_table()
+        cls.create_blacklist_table()
 
     @classmethod
     def drop_table(cls, table_name):
