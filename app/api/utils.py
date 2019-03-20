@@ -10,6 +10,20 @@
 import re
 from flask import jsonify
 
+EMAIL_PATTERN = re.compile(r'^.+@[\w]+\.[\w]+')
+PASSWORD_PATTERN = re.compile(r'.{5,}')
+COMMENT_PATTERN = re.compile(r'.{1,}')
+USERNAME_PATTERN = re.compile(r"^[a-zA-Z][\w]{3,}")
+STATUS_PATTERN = re.compile(r'^(resolved|unresolved|under investigation)$', re.IGNORECASE)
+
+def valid_field(field, regex_pattern):
+    """
+    field -> str
+    regex_pattern -> regular expression
+    Returns field if valid else None
+    """
+    return field if regex_pattern.match(field) else None
+
 def raise_error(status_code, message):
     """
     Returns a template for generating a custom error message
@@ -38,39 +52,35 @@ def valid_comment(comment):
     Removes white spaces from comment.
     """
     comment = comment.strip()
-    return comment
+    return valid_field(comment, COMMENT_PATTERN)
 
 def valid_status(status):
     """
     Returns True if status is one of Resolved, Investigation, Unresolved.
     Otherwise returns False
     """
-    status = status.strip()
-    if status not in ['resolved', 'under investigation', 'unresolved']:
-        return None
-    return status
+    return valid_field(status, STATUS_PATTERN)
 
 def valid_username(username):
     """
     Username is not valid if it is empty, is numeric only
     or is composed of whitespaces only.
     """
-    pattern = re.compile(r"^[a-zA-Z][\w]{3,}")
-    return username if pattern.match(username) else None
+    return valid_field(username, USERNAME_PATTERN)
 
 def valid_email(email):
     """
     Returns email if it is valid otherwise None
     """
-    pattern = re.compile(r'^.+@[\w]+\.[\w]+')
-    return email if pattern.match(email) else None
+    return valid_field(email, EMAIL_PATTERN)
 
 def valid_password(password):
     """
     Returns password if valid else None
     """
-    password = password.strip()
-    return password if len(password) >= 5 else None
+    # password = password.strip()
+    # return password if len(password) >= 5 else None
+    return valid_field(password, PASSWORD_PATTERN)
 
 def update_createdon(data_item):
     """
