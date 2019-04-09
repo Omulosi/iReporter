@@ -10,6 +10,9 @@ import click
 from app.db import Model
 
 def register(app):
+    """
+    Registers flask db command line arguments
+    """
     @app.cli.group()
     def db():
         """

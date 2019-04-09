@@ -2,14 +2,13 @@
     app.tests.v2.incidents
     ~~~~~~~~~~~~~~~~~~~~~~
 """
-from app import create_app
-from instance.config import Config, TestConfig
-from app.db import Model
-from app.api.v2.models import Record, User, Blacklist
-from datetime import datetime
-import pytest
 import json
+import pytest
+from app import create_app
 from app.api.utils import make_token_header
+from instance.config import TestConfig
+from app.db import Model
+from app.api.v2.models import User
 
 @pytest.fixture
 def client():
@@ -23,12 +22,20 @@ def client():
     app.config['JWT_BLACKLIST_ENABLED'] = True
     app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access', 'refresh']
     app.config['PROPAGATE_EXCEPTIONS'] = True
+
     client = app.test_client()
 
     # Create an application context before running the tests
     ctx = app.app_context()
     ctx.push()
+    db_url = "dbname='testdb' user='jp'\
+            host='localhost' password='cavier'".format(TestConfig.DBNAME,
+                                                       TestConfig.USERNAME,
+                                                       TestConfig.HOST,
+                                                       TestConfig.PASSWORD)
 
+    print(db_url)
+    # Set up the test database
     Model.create_all_tables()
 
     yield client

@@ -119,18 +119,9 @@ class UpdateSingleRedflag(Resource):
         if field == 'location':
             error_msg = 'location field invalid'
             parser, data_validator = self.location_parser, valid_location
-            # location_data = self.location_parser.parse_args(strict=True)
-            # new_location = location_data.get('location')
-            # if not valid_location(new_location):
-            #     return raise_error(400, 'location field is invalid')
-            # record.location = new_location
         elif field == 'comment':
             error_msg = 'comment field should not be empty'
             parser, data_validator = self.comment_parser, valid_comment
-            # comment_data = self.comment_parser.parse_args(strict=True)
-            # if not valid_comment(comment_data):
-            #     return raise_error(400, 'comment field should not be empty')
-            # record.comment = comment_data
 
         new_data = can_update(parser, field, data_validator)
         if not new_data:
