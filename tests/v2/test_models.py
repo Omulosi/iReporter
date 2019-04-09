@@ -2,39 +2,12 @@
     app.tests.v2.auth
     ~~~~~~~~~~~~~~~~~~~
 """
-from app import create_app
-from instance.config import Config, TestConfig
-from app.db import Model
+
 from app.api.v2.models import Record, User, Blacklist
 from datetime import datetime
 import pytest
 import json
 from app.api.utils import make_token_header
-
-@pytest.fixture
-def client():
-    """
-    Configures the application for testing and initializes a new database.
-    This fixture is called by each individual test.
-    """
-    app = create_app(TestConfig)
-    # Configuration settings for tests
-    app.config['JWT_SECRET_KEY'] = 'amsosecret'
-    app.config['JWT_BLACKLIST_ENABLED'] = True
-    app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access', 'refresh']
-    app.config['PROPAGATE_EXCEPTIONS'] = True
-    client = app.test_client()
-
-    # Create an application context before running the tests
-    ctx = app.app_context()
-    ctx.push()
-
-    Model.create_all_tables()
-
-    yield client
-
-    Model.clear_all_tables()
-    ctx.pop()
 
 
 def test_create_record(client):

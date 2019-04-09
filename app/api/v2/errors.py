@@ -36,6 +36,6 @@ def expired_token_callback():
 def revoked_token_callback():
     """
     Returns a custom error message when a user provides
-    an expired token
+    a revoked token
     """
     return raise_error(401, "Token has been revoked")
