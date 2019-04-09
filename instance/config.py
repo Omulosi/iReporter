@@ -35,3 +35,8 @@ class TestConfig(Config):
     TESTING = True
     DEBUG = True
     DBNAME  = 'testdb'
+    JWT_SECRET_KEY = 'amsosecret'
+    JWT_BLACKLIST_ENABLED = True
+    JWT_BLACKLIST_TOKEN_CHECKS = ['access', 'refresh']
+    PROPAGATE_EXCEPTIONS = True
+
