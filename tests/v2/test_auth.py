@@ -7,7 +7,7 @@ from app.api.v2.models import Record, User, Blacklist
 from datetime import datetime
 import pytest
 import json
-from app.api.utils import make_token_header
+from app.helpers import make_token_header
 
 
 def test_register(client):

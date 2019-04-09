@@ -7,7 +7,7 @@ import json
 from app import create_app
 from instance.config import TestConfig
 import pytest
-from app.api.utils import make_token_header
+from app.helpers import make_token_header
 from app.api.v2.models import User
 from app.db import Model
 
@@ -43,10 +43,10 @@ class AuthActions(object):
     def __init__(self, client):
         self._client = client
 
-    def signup(self, username, password):
+    def signup(self, username, password, admin=False):
         return self._client.post(
                 '/api/v2/auth/signup',
-                data={'username': username, 'password': password}
+                data={'username': username, 'password': password, 'isadmin': admin}
                 )
 
     def login(self, username='test', password='test-password'):
