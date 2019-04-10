@@ -7,7 +7,8 @@
 """
 
 from app import jwt
-from app.api.utils import raise_error
+from app.utils import raise_error
+from app.models import Blacklist
 
 @jwt.invalid_token_loader
 def invalid_token_callback(error_msg):

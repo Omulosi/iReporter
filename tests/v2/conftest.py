@@ -8,8 +8,10 @@ from app import create_app
 from instance.config import TestConfig
 import pytest
 from app.helpers import make_token_header
-from app.api.v2.models import User
-from app.db import Model
+# from app.api.v2.models import User
+from app.api.v2.mock_models import User, Model
+from app.database import db
+# from app.db import Model
 
 
 
@@ -20,14 +22,16 @@ def app():
    
     with app.app_context():
 
-        Model.create_all_tables()
+        # Model.create_all_tables()
+        db.init_db()
 
-        user = User(username='test', password='test-password')
-        user.put()
+        user = User()
+        User.add(username='test', password='test-password')
        
-    yield app
+        yield app
 
-    Model.clear_all_tables()
+        model = Model()
+        model.clear_all_tables()
 
     
 

@@ -1,103 +1,142 @@
-# """
-#     app.api.v2.models
-#     ~~~~~~~~~~~~~~~~~~
+'''
+    app.models
+    -----------------
+    Database wrapper and models
+'''
 
-#     Database models for users and intervention records
-
-# """
 
 from datetime import datetime
+from psycopg2.extras import RealDictCursor
 from werkzeug.security import generate_password_hash, check_password_hash
-from app import db
+from app.db.db import get_db
+
+class Model:
+
+    def __init__(self):
+        #: Get the connection object
+        self.conn = get_db()
+        self.cursor = self.conn.cursor(cursor_factory=RealDictCursor)
+
+    def commit(self):
+        """
+        commits the transaction to persist changes in the database
+        """
+        self.conn.commit()
+
+    
+    def query(self, sql, params=None):
+        """
+        generic query method
+        """
+        self.cursor.execute(sql, params or ())
 
 
-class Base(db.Model):
-    """
-    Implements common query methods shared by User and Record classes
-    """
+    
+    def fetchall(self):
+        """
+        fetches all data
+        """
+        return self.cursor.fetchall()
 
-    @classmethod
-    def filter_by(cls, field, value):
+    
+    def fetchone(self):
+        """
+        fetches a single data item
+        """
+        self.cursor.fetchone()
+
+    
+    def clear_all_tables(self):
+        """
+        Clears all tables
+        """
+        self.cursor.execute("""delete from records;""")
+        self.cursor.execute("""delete from users;""")
+        self.cursor.execute("""delete from blacklist;""")
+        self.commit()
+
+    
+    def filter_by(self, field, value):
         """
         field -> str
         Takes a field and a value by which to filter
         Returns a list of all matching items as dictionaries
         in a list or an empty list
         """
-        if cls == Record:
+        if isinstance(self, Record):
             query = """ select * from records where {} = %s;""".format(field)
-        if cls == User:
+        if isinstance(self, User):
             query = """ select * from users where {} = %s;""".format(field)
-        cls.query(query, (value,))
-        return cls.fetchall()
+        self.query(query, (value,))
+        return self.fetchall()
 
-    @classmethod
-    def all(cls):
+    
+    def all(self):
         """
         Return all items from users or records as a list of
         dictionaries or an empty list
         """
-        if cls == Record:
+        if isinstance(self, Record):
             query = """select * from records order by createdon desc;"""
-        if cls == User:
+        if isinstance(self, User):
             query = """select * from records order by createdon desc;"""
-        cls.query(query)
-        return cls.fetchall()
+        self.query(query)
+        return self.fetchall()
 
-    @classmethod
-    def by_id(cls, item_id):
+    
+    def by_id(self, item_id):
         """
         Query an item by id
         """
-        if cls == Record:
+        if isinstance(self, Record):
             query = "select * from records where id = %s;"
-        if cls == User:
+        if isinstance(self, User):
             query = "select * from users where id = %s;"
-        cls.query(query, (item_id,))
-        return cls.fetchall()
+        self.query(query, (item_id,))
+        return self.fetchall()
 
-    @classmethod
-    def delete(cls, _id):
+    
+    def delete(self, _id):
         """
         Deletes a data item with the specified id.
         """
-        if cls == Record:
+        if isinstance(self, Record):
             query = "delete from records where id=%s;"
-        if cls == User:
+        if isinstance(self, User):
             query = "delete from users where id=%s;"
-        cls.query(query, (_id,))
-        cls.commit()
+        self.query(query, (_id,))
+        self.commit()
 
-    @classmethod
-    def update(cls, _id, field, data):
+    
+    def update(self, _id, field, data):
         """
         Given a field(string) and data,
         updates field with data.
         """
-        if cls == Record:
+        if isinstance(self, Record):
             query = "update records set {} = ".format(field)
-        if cls == User:
+        if isinstance(self, User):
             query = "update users set {} = ".format(field)
-        cls.query(query + " %s where id = %s", (data, _id))
-        cls.commit()
+        self.query(query + " %s where id = %s", (data, _id))
+        self.commit()
 
-    @classmethod
-    def get_last_inserted_id(cls):
+    
+    def get_last_inserted_id(self):
         """ Given field(string) and data,
         updates field with data
         """
-        table = 'records' if (cls == Record) else 'users'
+        table = 'records' if isinstance(self, Record) else 'users'
         query = "select id from {} order by id desc limit 1;".format(table)
-        cls.query(query)
-        _id = cls.fetchall()
+        self.query(query)
+        _id = self.fetchall()
         if _id:
             return _id[0].get('id')
 
-class Record(Base):
+class Record(Model):
 
     """Record model"""
 
-    def __init__(self, location, comment, _type, user_id=None, status=None, images=None,
+    def add(self, location, comment, _type, user_id=None, status=None, images=None,
                  videos=None, uri=None):
         self.location = location
         self.comment = comment
@@ -110,12 +149,6 @@ class Record(Base):
         self.images = images or []
         self.videos = videos or []
         self.uri = uri or ''
-        super(Record, self).__init__()
-
-    def put(self):
-        """
-        Store the an item in the database
-        """
 
         query = """insert into records (location, comment, type, createdOn, user_id, status,
         Images, Videos, uri, createdby) values (%(location)s, %(comment)s, %(type)s,
@@ -155,16 +188,16 @@ class Record(Base):
             'comment': self.comment,
             'uri': self.uri
             }
-
-class User(Base):
+            
+class User(Model):
 
     """User model"""
 
-    def __init__(self, username, password, email=None, firstname=None, lastname=None,
-                 othernames=None, phone_number=None, isadmin=None):
-        super(User, self).__init__()
-        self.username = username
-        self.password_hash = generate_password_hash(password)
+    def add(self, username, password, email=None, firstname=None, lastname=None,
+                othernames=None, phone_number=None, isadmin=None):
+
+        self.username = username or ''
+        self.password = password or ''
         self.email = email or ''
         self.registered = datetime.utcnow()
         self.firstname = firstname or ''
@@ -172,7 +205,27 @@ class User(Base):
         self.othernames = othernames or ''
         self.phone_number = phone_number or ''
         self.isadmin = isadmin or False
-        super(User, self).__init__()
+
+        query = """insert into users
+        (username, password_hash, email, createdOn, firstname, lastname, othernames,
+        phoneNumber, isAdmin)
+        values (%(username)s, %(password_hash)s, %(email)s, %(registered)s,
+        %(firstname)s, %(lastname)s, %(othernames)s, %(phoneNumber)s, %(isAdmin)s);"""
+
+        self.query(query, {'username': self.username,
+                           'password_hash': generate_password_hash(self.password),
+                           'email':  self.email,
+                           'registered': self.registered,
+                           'firstname': self.firstname,
+                           'lastname': self.lastname,
+                           'othernames': self.othernames,
+                           'phoneNumber': self.phone_number,
+                           'isAdmin': self.isadmin
+                          })
+
+        self.commit()
+
+        
 
     def put(self):
         """
@@ -184,14 +237,14 @@ class User(Base):
                 values (%(username)s, %(password_hash)s, %(email)s, %(registered)s,
                 %(firstname)s, %(lastname)s, %(othernames)s, %(phoneNumber)s, %(isAdmin)s);"""
         self.query(query, {'username': self.username,
-                           'password_hash': self.password_hash,
+                           'password_hash': generate_password_hash(self.password),
                            'email':  self.email,
                            'registered': self.registered,
                            'firstname': self.firstname,
                            'lastname': self.lastname,
                            'othernames': self.othernames,
                            'phoneNumber': self.phone_number,
-                           'isAdmin': self.isadmin
+                           'isadmin': self.isadmin
                           })
 
         self.commit()
@@ -210,7 +263,7 @@ class User(Base):
             'lastname': self.lastname,
             'othernames': self.othernames,
             'phoneNumber': self.phone_number,
-            'isAdmin': self.isadmin
+            'isadmin': self.isadmin
             }
 
     def create_record(self, **kwargs):
@@ -222,6 +275,16 @@ class User(Base):
         record = Record(user_id=user_id, **kwargs)
         record.put()
 
+    def by_username(self, username):
+        """
+        Returns a user data item with the given username
+        as a dictionary.
+        """
+        query = """ select * from users where username = %s;"""
+        self.query(query, (username,))
+        record = self.fetchall()
+        return record[0] if record else {}
+
     @staticmethod
     def check_password(password_hash, password):
         """
@@ -230,25 +293,25 @@ class User(Base):
         """
         return check_password_hash(password_hash, password)
 
-class Blacklist(Base):
+class Blacklist(Model):
     """
     Blacklist Model
     """
-    def __init__(self, jti):
-        self.jti = jti
 
-    def put(self):
+    def add(self, jti):
         """
         store token identifier in the database
+
+        :param jti: token identifier
         """
         query = """insert into blacklist (jti) values (%s);"""
-        self.query(query, (self.jti,))
+        self.query(query, (jti,))
         self.commit()
 
-    @classmethod
-    def is_blacklisted(cls, jti):
+    
+    def is_blacklisted(self, jti):
         """
         Returns True if tokens jti is in the blacklist
         """
-        cls.query("""select * from blacklist where jti = %s;""",(jti,))
-        return bool(cls.fetchall())
+        self.query("""select * from blacklist where jti = %s;""",(jti,))
+        return bool(self.fetchall())

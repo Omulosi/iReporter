@@ -8,51 +8,43 @@
 
 from flask_restful import Resource, reqparse, url_for
 from flask_jwt_extended import jwt_required, get_jwt_identity, fresh_jwt_required
-from app.api.utils import (valid_location, valid_comment, valid_status,
-                           update_createdon, raise_error, can_update)
-from app.email import send_email
+from app.utils import (valid_location, valid_comment, valid_status,
+                           update_createdon, raise_error)
+from app.helpers import send_email
 from . import api_bp
-from .models import Record, User
-from .decorators import validate_before_update
+from app.models import Record, User
 
-class CreateOrReturnIncidents(Resource):
+
+#: create incident parser
+create_incident_parser = reqparse.RequestParser()
+create_incident_parser.add_argument('comment', type=str, required=True, help='comment not provided')
+create_incident_parser.add_argument('location', type=str, required=True, help='location not provided')
+
+
+class Incidents(Resource):
     """
     Implements methods for creating a record or returning a collection
     of records.
     """
-
-    def __init__(self):
-        self.parser = reqparse.RequestParser()
-        self.parser.add_argument('comment', type=str, required=True, help='comment not provided')
-        self.parser.add_argument('location', type=str, required=True, help='location not provided')
-        super(CreateOrReturnIncidents, self).__init__()
-
-    @jwt_required
-    def get(self, incident_type):
-        """
-        Returns a collection of either all redflags or
-        all intervention records
-        """
-
-        if incident_type not in ['red-flags', 'interventions']:
-            return raise_error(404, "The requested url cannot be found")
-        incidents = Record.filter_by('type', incident_type[:-1])
-        incidents = list(map(update_createdon, incidents))
-        return {'status': 200,
-                'data': incidents
-               }
 
     @fresh_jwt_required
     def post(self, incident_type):
         """
         Creates a new incident record
         """
-        if incident_type not in ['red-flags', 'interventions']:
+
+        #: Initialize database access objects
+        USER = User()
+        RECORD = Record()
+
+        if incident_type not in ('red-flags', 'interventions'):
             return raise_error(404, "The requested url cannot be found")
         incident_type = incident_type[:-1]
-        data = self.parser.parse_args(strict=True)
+
+        data = create_incident_parser.parse_args(strict=True)
         location = data.get('location')
         comment = data.get('comment')
+
         if not valid_location(location):
             return raise_error(400, "Invalid location. Check that the location field"
                                     "is not empty and that it has a 'lat,long' format"
@@ -60,15 +52,17 @@ class CreateOrReturnIncidents(Resource):
         if not valid_comment(comment):
             return raise_error(400, "Invalid  comment. Check that the comment "
                                     "is not empty/blank and that it has meaningful words")
+
         current_user = get_jwt_identity()
-        user_id = User.filter_by('username', current_user)[0].get('id')
-        record = Record(location=data['location'], comment=data['comment'],
+        user_id = USER.filter_by('username', current_user)[0].get('id')
+
+        record = RECORD.add(location=data['location'], comment=data['comment'],
                         _type=incident_type, user_id=int(user_id))
-        record.put()
-        record_id = Record.get_last_inserted_id()
-        uri = url_for('v2.incident',
+        record_id = RECORD.get_last_inserted_id()
+        uri = url_for('v2.incidents',
                       incident_type=incident_type + 's', _id=record_id, _external=True)
-        Record.update(record_id, 'uri', uri)
+        RECORD.update(record_id, 'uri', uri)
+
         output = {}
         output['id'] = record_id
         output["message"] = "Created {} record".format(incident_type)
@@ -79,101 +73,162 @@ class CreateOrReturnIncidents(Resource):
 
         return output, 201, {'Location': uri}
 
-class SingleIncident(Resource):
-    """
-    Implements methods for manipulating a particular record with a given id.
-    """
-
     @jwt_required
-    def get(self, incident_type, _id):
+    def get(self, incident_type, _id=None):
         """
         Returns a single incident record
         """
-        if incident_type not in ['red-flags', 'interventions']:
+        #: Initialize database access objects
+        USER = User()
+        RECORD = Record()
+
+        if incident_type not in ('red-flags', 'interventions'):
             return raise_error(404, "The requested url cannot be found")
+
+        if _id is None:
+            incidents = RECORD.filter_by('type', incident_type[:-1])
+            incidents = list(map(update_createdon, incidents))
+
+            return {'status': 200,
+                    'data': incidents
+                   }
+
         if not _id.isnumeric():
             return raise_error(404, "Invalid ID. Should be an Integer")
-        _id = int(_id)
-        incident_type = incident_type[:-1]
-        incident = Record.filter_by('id', _id)
+
+        incident_id = int(_id)
+        incident_type = incident_type[:-1] # Remove the last 's' from name
+        incident = RECORD.filter_by('id', incident_id)
         if not incident or incident[0]['type'] != incident_type:
             return raise_error(404, "{} not found".format(incident_type))
+
         incident = update_createdon(incident[0])
+
         output = {'status': 200,
                   'data': incident
                  }
         return output
 
     @fresh_jwt_required
-    @validate_before_update
     def delete(self, incident_type, _id):
         """
         Deletes a single incident record
         """
-        Record.delete(_id)
+
+        #: Initialize database access objects
+        USER = User()
+        RECORD = Record()
+
+        if not _id.isnumeric():
+            return raise_error(400, "ID should be an integer")
+
+        username = get_jwt_identity()
+        user = USER.filter_by('username', username)[0]
+        user_id = user.get('id')
+
+        if incident_type not in ('red-flags', 'interventions'):
+            return raise_error(404, "The requested url cannot be found")
+
+        incident = RECORD.filter_by('id', _id)
+        if not incident:
+            return raise_error(404, "{} does not exist".format(incident_type))
+
+        createdby = incident[0].get('createdby')
+       
+        if user_id != createdby:
+            return raise_error(403, "You can only delete your own record.")
+
+        RECORD.delete(_id)
         message = incident_type + ' has been deleted'
+
         output = {}
         output['status'] = 200
         output['data'] = [{'id':_id, 'message': message}]
         return output
 
-class UpdateSingleIncident(Resource):
+class UpdateIncident(Resource):
     """
     Updates the location, comment or status field of an incident
     """
 
-    def __init__(self):
-        self.location_parser = reqparse.RequestParser()
-        self.comment_parser = reqparse.RequestParser()
-        self.status_parser = reqparse.RequestParser()
-        self.location_parser.add_argument('location', type=str, required=True,
-                                          help='location not provided')
-        self.comment_parser.add_argument('comment', type=str, required=True,
-                                         help='comment not provided')
-        self.status_parser.add_argument('status', type=str, required=True,
-                                        help='status not provided')
-        super(UpdateSingleIncident, self).__init__()
-
-
     @fresh_jwt_required
-    @validate_before_update
     def patch(self, incident_type, _id, field):
         """
         Updates the specified field (location, comment or status)
         """
 
+        #: Initialize database access objects
+        USER = User()
+        RECORD = Record()
+
+        if not _id.isnumeric():
+            return raise_error(400, "ID should be an integer")
+        if field not in ('location', 'comment', 'status'):
+            return raise_error(400, "Invalid field name")
+
+        #: Initialize a parser to collect user input
+        parser = reqparse.RequestParser()
+        parser.add_argument(field, type=str, required=True)
+
+        #:
+        #: Validate user input
+        #:
+
+        try:
+            data = parser.parse_args(strict=True)
+        except:
+            error_msg = "Invalid input data. Only {} field should be provided".format(field)
+            return raise_error(400, error_msg)
+
+        new_field_value = data.get(field)
         if field == 'location':
+            new_field_value = valid_location(new_field_value)
             error_msg = ("Invalid location. Either it is empty,"
                          "does not conform to 'lat, long' format"
                          "or exceeds valid ranges(+/- 90, +/- 180)")
-            parser, data_validator = self.location_parser, valid_location
-
         elif field == 'comment':
+            new_field_value = valid_comment(new_field_value)
             error_msg = 'comment field should not be empty'
-            parser, data_validator = self.comment_parser, valid_comment
-
         elif field == 'status':
+            new_field_value = valid_status(new_field_value)
             error_msg = ("Invalid status type. Status is either empty or "
                          "is not one of 'resolved','under investigation' or"
                          " 'unresolved' ")
-            parser, data_validator = self.status_parser, valid_status
-
-        new_data = can_update(parser, field, data_validator)
-        if not new_data:
+        if not new_field_value:
             return raise_error(400, error_msg)
-        Record.update(_id, field, new_data)
+
+        #: Get incident record to be updated
+        incident = RECORD.filter_by('id', _id)
+        if not incident:
+            return raise_error(404, "{} does not exist".format(incident_type[:-1]))
+        createdby = incident[0].get('createdby')
+
+        #: Get ID of user accessing endpoint
+        username = get_jwt_identity()
+        user = USER.filter_by('username', username)[0]
+        user_id = user.get('id')
+        
+        #: Check for pemissions
+        if field != 'status' and user_id != createdby:
+            return raise_error(403, "You can only update {} field of "
+                                    "your own record.".format(field))
+        if field == 'status' and not user.get('isadmin'):
+            return raise_error(403, "Request forbidden")
+
+        #: All relevant checks have passed by this stage, update appropriate field
+        RECORD.update(_id, field, new_field_value)
+
         output = {}
         msg = "Updated " + incident_type + " record's " + field
         output['status'] = 200
         output['data'] = [{"id": _id, "message": msg}]
+
         if field == 'status':
-            record = Record.by_id(int(_id))
-            u_id = record[0].get('createdby')
-            user = User.by_id(u_id)[0]
             user_email = user.get('email')
-            msg = msg + ' to ' + new_data
             if user_email:
+                msg = msg + ' to ' + new_field_value
                 send_email("Status Update", 'mulongojohnpaul@gmail.com', [user_email], msg)
+                
         return output
 
 class ReturnUserIncidents(Resource):
@@ -203,13 +258,3 @@ class ReturnUserIncidents(Resource):
         return {'status': 200,
                 'data': incidents
                }
-
-# API resource routing
-#
-
-api_bp.add_resource(CreateOrReturnIncidents, '/<incident_type>', endpoint='incidents')
-api_bp.add_resource(SingleIncident, '/<incident_type>/<_id>', endpoint='incident')
-api_bp.add_resource(UpdateSingleIncident, '/<incident_type>/<_id>/<field>',\
-        endpoint='update_incident')
-api_bp.add_resource(ReturnUserIncidents, '/users/<user_id>/<incident_type>',
-                    endpoint='user_incidents')

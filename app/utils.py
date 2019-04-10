@@ -1,14 +1,15 @@
 """
-    app.api.utils
-    ~~~~~~~~~~~~~~~~~~
+    app.utils
+    ~~~~~~~~~~~~~~~~~~~~~~~~
 
-    This module contains general utility functions that help
-    in processing and validating input data
+    General utilities
 
 """
 
 import re
 from flask import jsonify
+from app import jwt
+from app.models import Blacklist
 
 EMAIL_PATTERN = re.compile(r'^.+@[\w]+\.[\w]+')
 PASSWORD_PATTERN = re.compile(r'.{5,}')
@@ -18,9 +19,13 @@ STATUS_PATTERN = re.compile(r'^(resolved|unresolved|under investigation)$', re.I
 
 def valid_field(field, regex_pattern):
     """
-    field -> str
-    regex_pattern -> regular expression
     Returns field if valid else None
+
+    :param field: The value to check for validity
+    :type field: str
+
+    :param regex_pattern: Regular expression pattern to match against field
+    :type regex_pattern: '_sre.SRE_Pattern
     """
     return field if regex_pattern.match(field) else None
 
@@ -92,18 +97,21 @@ def update_createdon(data_item):
     data_item['createdon'] = data_item['createdon'].strftime('%a, %d %b %Y %H:%M %p')
     return data_item
 
-def make_token_header(token):
-    """
-    creates an authorization header given a
-    token
-    """
-    return {'Authorization': 'Bearer {}'.format(token)}
-
-
 def can_update(parser, field, data_validator):
+    '''
+    Return field data if it is valid otherwise return None
+    '''
+    args = parser.parse_args()
+    return data_validator(args.get(field))
+
+@jwt.token_in_blacklist_loader
+def check_if_token_in_blacklist(decrypted_token):
     """
-    checks if field is valid and thus can be updated.
+    Takes a decoded jwt (dictionary).
+    Returns True if the token is blacklisted, False
+    otherwise
     """
-    data_parser = parser.parse_args(strict=True)
-    new_data = data_parser.get(field)
-    return data_validator(new_data)
+
+    BLACKLIST = Blacklist()
+    jti = decrypted_token['jti']
+    return BLACKLIST.is_blacklisted(jti)
