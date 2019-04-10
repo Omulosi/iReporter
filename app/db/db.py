@@ -32,7 +32,7 @@ def close_db(e=None):
 def init_db():
     db = get_db()
 
-    with current_app.open_resource('database/schema.sql') as f:
+    with current_app.open_resource('db/schema.sql') as f:
         with db.cursor() as cursor:
             cursor.execute(f.read().decode('utf8'))
 
@@ -57,6 +57,19 @@ def dropall_db_command():
         db.commit()
     click.echo('Dropped all tables')
 
+@click.command('clear-all-db')
+@with_appcontext
+def clear_all_db_command():
+    """clear all tables."""
+    db = get_db()
+    with db:
+        with db.cursor() as cursor:
+            cursor.execute("""delete from users;""")
+            cursor.execute("""delete from records;""")
+            cursor.execute("""delete from blacklist;""")
+        db.commit()
+    click.echo('Cleared all tables')
+
 @click.command('rollback-db')
 @with_appcontext
 def rollback_db_command():
@@ -77,3 +90,4 @@ def init_app(app):
     app.cli.add_command(init_db_command)
     app.cli.add_command(dropall_db_command)
     app.cli.add_command(rollback_db_command)
+    app.cli.add_command(clear_all_db_command)
