@@ -26,6 +26,9 @@ def create_app(config_class=Config):
     jwt.init_app(app)
     mail.init_app(app)
 
+    from app.database import db 
+    db.init_app(app)
+
     from app.api.v1 import bp as api_v1
     app.register_blueprint(api_v1, url_prefix='/api/v1')
 

@@ -2,7 +2,7 @@
     app.api.v2.auth
     ~~~~~~~~~~~~~~~~~
 
-    Implements authentication and authorization functionality (Sign In and Sign Up)
+    Implements authentication and authorization functionality
 
 """
 
@@ -11,35 +11,48 @@ from flask_jwt_extended import (create_access_token, create_refresh_token,
                                 jwt_required, get_raw_jwt)
 from flask_restful import Resource, reqparse
 from app.api.utils import (valid_email, valid_password, update_createdon, valid_username, raise_error)
-from .models import  User, Blacklist
+from .mock_models import User, Blacklist
 from . import api_bp
+
+#:
+#: Sign Up parser
+#:
+signup_parser = reqparse.RequestParser()
+signup_parser.add_argument('username', type=str, required=True,
+                         help='Please enter username and password')
+signup_parser.add_argument('password', type=str, required=True,
+                         help='Please enter username and password')
+#: Optional fields
+signup_parser.add_argument('email', type=str)
+signup_parser.add_argument('phone', type=str)
+signup_parser.add_argument('firstname', type=str)
+signup_parser.add_argument('lastname', type=str)
+signup_parser.add_argument('othernames', type=str)
+signup_parser.add_argument('isadmin', type=str)
+
+#:
+#: Log In parser
+#:
+login_parser = reqparse.RequestParser()
+login_parser.add_argument('username', type=str, required=True,
+                    help='Please enter username and password')
+login_parser.add_argument('password', type=str, required=True,
+                    help='Please enter username and password')
 
 
 class SignUp(Resource):
     """
-    Implements method for signing up a user
+    Implements endpoints for signing up a user
     """
-    def __init__(self):
-
-        self.parser = reqparse.RequestParser()
-        self.parser.add_argument('username', type=str, required=True,
-                                 help='Please enter username and password')
-        self.parser.add_argument('password', type=str, required=True,
-                                 help='Please enter username and password')
-        # Optional fields
-        self.parser.add_argument('email', type=str)
-        self.parser.add_argument('phone', type=str)
-        self.parser.add_argument('firstname', type=str)
-        self.parser.add_argument('lastname', type=str)
-        self.parser.add_argument('othernames', type=str)
-        self.parser.add_argument('isadmin', type=str)
-        super(SignUp, self).__init__()
 
     def post(self):
         """
         Registers a new user
         """
-        data = self.parser.parse_args()
+
+        USER = User()
+
+        data = signup_parser.parse_args()
         username = data.get('username')
         password = data.get('password')
         email = data.get('email')
@@ -53,18 +66,18 @@ class SignUp(Resource):
         if not username:
             return raise_error(400, "Invalid Username. It should be at least 3 characters long and"
                                "the first character should be a letter.")
-        if User.filter_by('username', username):
+        if USER.filter_by('username', username):
             return raise_error(400, "Please use a different username")
         if email and not valid_email(email):
             return raise_error(400, "Invalid email format")
-        if email and User.filter_by('email', email):
+        if email and USER.filter_by('email', email):
             return raise_error(400, "Please use a different email")
         if not valid_password(password):
             return raise_error(400, "Invalid password. "
                                "Ensure the password is at least 5 characters long")
-        user = User(username=username, password=password, email=email, firstname=firstname,
+        USER.add(username=username, password=password, email=email, firstname=firstname,
                     lastname=lastname, othernames=othernames, phone_number=phone, isadmin=isadmin)
-        user.put()
+    
         access_token = create_access_token(identity=username, fresh=True)
         refresh_token = create_refresh_token(identity=username)
 
@@ -72,7 +85,7 @@ class SignUp(Resource):
             'status': 201,
             'data': [{'access_token': access_token,
                       'refresh_token': refresh_token,
-                      'user': user.serialize
+                      'user': USER.serialize
                      }]
             }, 201
 
@@ -81,30 +94,38 @@ class Login(Resource):
     Implements login endpoint. The endpoint returns an access and
     a fresh token on successful request.
     """
-    def __init__(self):
-        self.parser = reqparse.RequestParser()
-        self.parser.add_argument('username', type=str, required=True,
-                                 help='Please enter username and password')
-        self.parser.add_argument('password', type=str, required=True,
-                                 help='Please enter username and password')
-        super(Login, self).__init__()
+    
 
     def post(self):
         """
         Logs in a user
         """
-        data = self.parser.parse_args()
+        USER = User()
+
+        data = login_parser.parse_args()
         username = data.get('username')
         password = data.get('password')
-        user = User.by_username(username)
+
+        if username is None:
+            return raise_error(400, "Missing 'username' in body")
+        if password is None:
+            return raise_error(400, "Missing 'password' in body")
+
+        #: Get the user object -  a dictionary
+        user = USER.by_username(username)
         p_hash = user.get('password_hash', '')
-        if not user or not User.check_password(p_hash, password):
+
+        #: validate password
+        if not user or not USER.check_password(p_hash, password):
             return raise_error(401, "Invalid username or password")
+
+        #: create tokens
         access_token = create_access_token(identity=username, fresh=True)
         refresh_token = create_refresh_token(identity=username)
         user = {field_name: field_val for field_name, field_val
                 in user.items() if field_name != 'password_hash'}
         user = update_createdon(user)
+
         return {
             'status': 200,
             'data': [{'access_token': access_token,
@@ -115,8 +136,7 @@ class Login(Resource):
 
 class RefreshToken(Resource):
     """
-    Creates a refresh token and returns it as response to a
-    post request from a client.
+    Generates new access tokens given a refresh token
     """
 
     @jwt_refresh_token_required
@@ -134,18 +154,21 @@ class RefreshToken(Resource):
 
 class LogoutAccess(Resource):
     """
-    Endpoint for logging out a user
+    Revoke access tokens
     """
 
     @jwt_required
     def delete(self):
         """
-        Revokes the current user's access token
+        Revokes the current user's access token by storing it in
+        the blacklist table
         """
+        BLACLIST = Blacklist()
+
         # jti: json token identifier (unique identifier)
         jti = get_raw_jwt()['jti']
-        blacklist = Blacklist(jti=jti)
-        blacklist.put() # store jti in the database
+        BLACLIST.add(jti=jti)
+    
         return {
             "status": 200,
             "message":"successfully logged out"
@@ -153,7 +176,7 @@ class LogoutAccess(Resource):
 
 class LogoutRefresh(Resource):
     """
-    Endpoint for logging out a user
+    Revoke refresj tokens
     """
 
     @jwt_refresh_token_required
@@ -161,22 +184,16 @@ class LogoutRefresh(Resource):
         """
         Revokes the current user's refresh token
         """
+
+        BLACLIST = Blacklist()
+
         # jti: json token identifier
         jti = get_raw_jwt()['jti']
-        blacklist = Blacklist(jti=jti)
-        blacklist.put() # store jti in the database
+
+        #: store jti in the database
+        BLACLIST.add(jti=jti)
+        
         return {
             "status": 200,
             "message":"successfully logged out"
             }
-
-#
-#
-# API resource routing
-#
-
-api_bp.add_resource(SignUp, '/auth/signup', endpoint='signup')
-api_bp.add_resource(Login, '/auth/login', endpoint='login')
-api_bp.add_resource(RefreshToken, '/auth/refresh', endpoint='refresh')
-api_bp.add_resource(LogoutAccess, '/auth/logout', endpoint='logout_access')
-api_bp.add_resource(LogoutRefresh, '/auth/refresh/logout', endpoint='logout_refresh')
