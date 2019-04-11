@@ -102,8 +102,8 @@ class UpdateSingleRedflag(Resource):
     def __init__(self):
         self.location_parser = reqparse.RequestParser()
         self.comment_parser = reqparse.RequestParser()
-        self.location_parser.add_argument('location', type=str)
-        self.comment_parser.add_argument('comment', type=str)
+        self.location_parser.add_argument('location', type=str, required=True)
+        self.comment_parser.add_argument('comment', type=str, required=True)
         super(UpdateSingleRedflag, self).__init__()
 
     def patch(self, _id, field):

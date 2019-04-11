@@ -3,27 +3,17 @@ python:
         - "3.5.2"
 env:
   global:
-    - CC_TEST_REPORTER_ID=$TEST_REPORTER_ID
+    - CC_TEST_REPORTER_ID=976f94313dd1630a35e7b655cd59d9aae1f33752d05b65d928e6d140f21e55ee
 services:
     - postgresql
 before_script:
         - psql -c 'create database testdb;' -U postgres
         - psql -c "create user jp with password 'cavier';" -U postgres
-        - flask db create-all
+        - flask init-db
 install:
-        - pip install flask
-        - pip install pytest
-        - pip install pytest-cov
-        - pip install flask_restful
-        - pip install coveralls
-        - pip install codecov
-        - pip install python-dotenv
-        - pip install psycopg2-binary
-        - pip install flask_jwt_extended
-        - pip install flask-mail
+        - pip install -r requirements.txt
 script:
-        - pytest --cov=./app/tests/v2
+        - pytest
 after_success:
-        - codecov
         - coveralls
         - codeclimate-test-reporter

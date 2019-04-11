@@ -18,12 +18,12 @@ def make_token_header(token):
     """
     return {'Authorization': 'Bearer {}'.format(token)}
 
-def send_email(subject, sender, recipients, text_body):
+def send_email(subject, sender, recipients, body):
     """
     A function for sending an email
     """
     msg = Message(subject=subject, sender=sender, recipients=recipients)
-    msg.body = text_body
+    msg.body = body
     mail.send(msg)
 
 def raise_error(status_code, message):

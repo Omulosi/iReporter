@@ -8,13 +8,13 @@
 from flask import Flask
 from flask_jwt_extended import JWTManager
 from flask_mail import Mail
-from instance.config import Config
+from instance.config import DevelopmentConfig, ProductionConfig
 from app.db import db
 
 jwt = JWTManager()
 mail = Mail()
 
-def create_app(config_class=Config):
+def create_app(config_class=ProductionConfig):
     """
     An application factory function for creating a flask app
     instance and registering blueprints

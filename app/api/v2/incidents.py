@@ -7,6 +7,7 @@
 """
 
 from flask_restful import Resource, reqparse, url_for
+from flask import current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity, fresh_jwt_required
 from app.utils import (valid_location, valid_comment, valid_status,
                            update_createdon, raise_error)
@@ -28,11 +29,12 @@ class Incidents(Resource):
     """
 
     @fresh_jwt_required
-    def post(self, incident_type):
+    def post(self, incident_type, _id=None):
         """
         Creates a new incident record
         """
-
+        if _id is not None:
+            return raise_error(405, 'Method not allowed for the requested URL')
         #: Initialize database access objects
         USER = User()
         RECORD = Record()
@@ -92,9 +94,9 @@ class Incidents(Resource):
             return {'status': 200,
                     'data': incidents
                    }
-
+        print(_id)
         if not _id.isnumeric():
-            return raise_error(404, "Invalid ID. Should be an Integer")
+            return raise_error(400, "Invalid ID. Should be an Integer")
 
         incident_id = int(_id)
         incident_type = incident_type[:-1] # Remove the last 's' from name
@@ -227,34 +229,9 @@ class UpdateIncident(Resource):
             user_email = user.get('email')
             if user_email:
                 msg = msg + ' to ' + new_field_value
-                send_email("Status Update", 'mulongojohnpaul@gmail.com', [user_email], msg)
+                send_email(subject="Status Update",
+                           sender=current_app.config.get('MAIL_USERNAME'),
+                           recipients=[user_email],
+                           body=msg)
                 
         return output
-
-class ReturnUserIncidents(Resource):
-    """
-    Implements methods for manipulating a particular record
-    """
-
-    @jwt_required
-    def get(self, user_id, incident_type):
-        """
-        Return all incidents (red-flag/intervention) created by
-        a paricular with the id 'user_id'.
-        """
-        if incident_type not in ['red-flags', 'interventions']:
-            return raise_error(404, "The requested url cannot be found")
-        incident_type = incident_type[:-1]
-        if not user_id.isnumeric():
-            return raise_error(404, "Invalid ID. Should be an Integer")
-        user_id = int(user_id)
-        if not User.by_id(user_id):
-            return raise_error(404, "User does not exist")
-
-        incidents = Record.query("""select * from records where user_id = %s and
-                type = %s;""", (user_id, incident_type))
-        incidents = Record.fetchall()
-        incidents = list(map(update_createdon, incidents))
-        return {'status': 200,
-                'data': incidents
-               }

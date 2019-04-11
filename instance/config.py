@@ -20,20 +20,35 @@ class Config:
 
     SECRET_KEY = os.environ.get('SECRET_KEY')
     JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY')
-    JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=24)
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(minutes=25)
     JWT_BLACKLIST_ENABLED = True
     JWT_BLACKLIST_TOKEN_CHECKS = ['access', 'refresh']
     PROPAGATE_EXCEPTIONS = True
 
-    #: Mail server configurtion values
+    #: Database url
+    DATABASE = os.getenv('DB_URL')
+
+class DevelopmentConfig(Config):
+    '''
+    Development configuration values
+    '''
+    #: settigs for using a local python smtpd mail server
+    MAIL_SERVER = 'localhost'
+    MAIL_PORT = 8025
+    MAIL_USERNAME = 'no-reply@' + MAIL_SERVER
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=24)
+
+class ProductionConfig(Config):
+    '''
+    Production configuration values
+    '''
+
+    #: Mail server configuration values
     MAIL_SERVER=os.environ.get('MAIL_SERVER')
     MAIL_PORT=os.environ.get('MAIL_PORT')
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
     MAIL_USE_TLS=os.environ.get('MAIL_USE_TLS')
     MAIL_USERNAME=os.environ.get('MAIL_USERNAME')
-
-    #: Database url
-    DATABASE = os.getenv('DB_URL')
 
 class TestConfig(Config):
     '''
@@ -42,10 +57,6 @@ class TestConfig(Config):
     
     TESTING = True
     DEBUG = True
-    DBNAME  = 'testdb'
-    JWT_SECRET_KEY = 'amsosecret'
-    JWT_BLACKLIST_ENABLED = True
-    JWT_BLACKLIST_TOKEN_CHECKS = ['access', 'refresh']
     PROPAGATE_EXCEPTIONS = True
-    DATABASE = os.getenv('TEST_DB_URL')
+    DATABASE = os.environ.get('TEST_DB_URL')
 

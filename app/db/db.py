@@ -14,7 +14,7 @@ from instance.config import Config
 
 
 def get_db():
-
+    
     if 'db' not in g:
         g.db = psycopg2.connect(
                 current_app.config['DATABASE']
@@ -36,31 +36,7 @@ def init_db():
         with db.cursor() as cursor:
             cursor.execute(f.read().decode('utf8'))
 
-#: Database commands
-@click.command('init-db')
-@with_appcontext
-def init_db_command():
-    """Clear the existing data and create new tables."""
-    init_db()
-    click.echo('Initialized the database')
-
-@click.command('dropall-db')
-@with_appcontext
-def dropall_db_command():
-    """drop all tables."""
-    db = get_db()
-    with db:
-        with db.cursor() as cursor:
-            cursor.execute("""drop table users;""")
-            cursor.execute("""drop table records;""")
-            cursor.execute("""drop table blacklist;""")
-        db.commit()
-    click.echo('Dropped all tables')
-
-@click.command('clear-all-db')
-@with_appcontext
-def clear_all_db_command():
-    """clear all tables."""
+def clear_tables():
     db = get_db()
     with db:
         with db.cursor() as cursor:
@@ -68,17 +44,34 @@ def clear_all_db_command():
             cursor.execute("""delete from records;""")
             cursor.execute("""delete from blacklist;""")
         db.commit()
-    click.echo('Cleared all tables')
 
-@click.command('rollback-db')
-@with_appcontext
-def rollback_db_command():
-    """Rollback previous transaction."""
+def rollback():
     db = get_db()
     with db:
         with db.cursor() as cursor:
             cursor.execute("rollback;")
         db.commit()
+
+#: Database cli commands
+@click.command('init-db')
+@with_appcontext
+def init_db_command():
+    """Clear the existing data and create new tables."""
+    init_db()
+    click.echo('Initialized the database')
+
+@click.command('clear-all-db')
+@with_appcontext
+def clear_all_db_command():
+    """clear all tables."""
+    clear_tables()
+    click.echo('All tables cleared')
+
+@click.command('rollback-db')
+@with_appcontext
+def rollback_db_command():
+    """Rollback previous transaction."""
+    rollback()
     click.echo('Transaction rolled back')
 
 
@@ -88,6 +81,5 @@ def init_app(app):
     app.teardown_appcontext(close_db)
     # add a new command that can be called with flask command
     app.cli.add_command(init_db_command)
-    app.cli.add_command(dropall_db_command)
     app.cli.add_command(rollback_db_command)
     app.cli.add_command(clear_all_db_command)

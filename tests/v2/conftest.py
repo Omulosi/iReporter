@@ -1,18 +1,18 @@
 """
     tests.v2.auth
-    ~~~~~~~~~~~~~~~~~~~
+    ~~~~~~~~~~~~~~
+
+    This module contains functions for configuring the application
+    for testing
 """
 
 import json
 from app import create_app
-from instance.config import TestConfig
+from instance.config import TestConfig, Config
 import pytest
 from app.helpers import make_token_header
-# from app.api.v2.models import User
-from app.api.v2.mock_models import User, Model
-from app.database import db
-# from app.db import Model
-
+from app.models import User, Model, Record
+from app.db import db
 
 
 @pytest.fixture
@@ -22,16 +22,12 @@ def app():
    
     with app.app_context():
 
-        # Model.create_all_tables()
-        db.init_db()
-
-        user = User()
-        User.add(username='test', password='test-password')
+        USER = User()
+        USER.add(username='test', password='test-password')
        
         yield app
 
-        model = Model()
-        model.clear_all_tables()
+        db.clear_tables()
 
     
 

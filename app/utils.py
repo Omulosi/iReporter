@@ -101,7 +101,7 @@ def can_update(parser, field, data_validator):
     '''
     Return field data if it is valid otherwise return None
     '''
-    args = parser.parse_args()
+    args = parser.parse_args(strict=True)
     return data_validator(args.get(field))
 
 @jwt.token_in_blacklist_loader

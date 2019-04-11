@@ -18,7 +18,7 @@ from app.api.v2 import incidents, auth
 from app.api.v2.auth import SignUp, Login, RefreshToken, LogoutRefresh, LogoutAccess
 
 #: Incident records resources
-from app.api.v2.incidents import Incidents, UpdateIncident, ReturnUserIncidents
+from app.api.v2.incidents import Incidents, UpdateIncident
 
 #: Authentication routes
 api_bp.add_resource(SignUp, '/auth/signup', endpoint='signup')
@@ -39,7 +39,3 @@ api_bp.add_resource(
 	UpdateIncident, 
 	'/<incident_type>/<_id>/<field>',
     endpoint='update_incident')
-
-api_bp.add_resource(ReturnUserIncidents,
-	'/users/<user_id>/<incident_type>',
-    endpoint='user_incidents')

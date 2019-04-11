@@ -1,9 +1,11 @@
 """
     app.tests.v2.auth
     ~~~~~~~~~~~~~~~~~~~
+
+    Tests for authentication functionality
 """
 
-from app.api.v2.models import Record, User, Blacklist
+from app.models import Record, User, Blacklist
 from datetime import datetime
 import pytest
 import json

@@ -1,10 +1,13 @@
 """
-    app.tests.v2.incidents
+    tests.v2.incidents
     ~~~~~~~~~~~~~~~~~~~~~~
+
+    Tests for incident resources
 """
+
 import json
 from app.helpers import make_token_header
-from app.api.v2.models import User
+from app.models import User, Record
 
 
 #: test data
@@ -120,6 +123,7 @@ def test_get_incident(client, auth):
     resp = client.get(uri, headers=make_token_header(access_token))
     assert resp.status_code == 200
     data = json.loads(resp.data.decode('utf-8'))
+
     #: check all fields are present
     data = data['data']
     assert data['location']
@@ -142,10 +146,10 @@ def test_get_incident_validate(client, auth):
     access_token, refresh_token = data['access_token'], data['refresh_token']
 
     #: Invalid requests - bad ID
-    resp = client.get('/api/v1/interventions/999', headers=make_token_header(access_token))
+    resp = client.get('/api/v2/interventions/999', headers=make_token_header(access_token))
     assert resp.status_code == 404
     resp = client.get('/api/v2/interventions/some-id', headers=make_token_header(access_token))
-    assert resp.status_code == 404
+    assert resp.status_code == 400
 
     #: Missing authorizartion header
     resp = client.post('/api/v2/interventions', data=DATA)
@@ -193,7 +197,7 @@ def test_delete_incident_validate(client, auth):
     resp = client.delete('/api/v2/interventions/9999', headers=make_token_header(access_token_1))
     assert resp.status_code == 404
     resp = client.delete('/api/v2/interventions/data-id', headers=make_token_header(access_token_1))
-    assert resp.status_code == 404
+    assert resp.status_code == 400
 
     #: Refresh tokens cannot access delete endpoint
     resp = client.delete('/api/v2/interventions/9999', headers=make_token_header(refresh_token_1))
@@ -293,9 +297,9 @@ def test_patch_location_validate(client, auth):
     
     #: Invalid IDs
     resp = client.patch('/api/v2/interventions/10000/' + field, headers=make_token_header(access_token_1))
-    assert resp.status_code == 404
+    assert resp.status_code == 400
     resp = client.patch('/api/v2/interventions/record/' + field, headers=make_token_header(access_token_1))
-    assert resp.status_code == 404
+    assert resp.status_code == 400
     
     #: Too many input fields
     resp = client.patch(uri_1, data={'location': '34,34', 'comment': 'corrupt lawyers'}, headers=make_token_header(access_token_1))
@@ -366,9 +370,9 @@ def test_patch_comment_validate(client, auth):
     
     #: Invalid IDs
     resp = client.patch('/api/v2/interventions/10000/comment', headers=make_token_header(access_token_1))
-    assert resp.status_code == 404
+    assert resp.status_code == 400
     resp = client.patch('/api/v2/interventions/record/comment', headers=make_token_header(access_token_1))
-    assert resp.status_code == 404
+    assert resp.status_code == 400
     
     #: Too many input fields
     resp = client.patch(uri_1, data={'location': '34,34', 'comment': 'corrupt lawyers'}, headers=make_token_header(access_token_1))
@@ -443,35 +447,3 @@ def test_patch_status(client, auth):
     resp = client.patch(update_uri, data={'status': 'resolved'}, 
             headers=make_token_header(access_token))
     assert resp.status_code == 403
-
-def test_get_user_incidences(client, auth):
-    """
-    Tests endpoint for getting all incidences
-    """
-    #: Sign in and acquire tokens for user-1
-    resp = auth.login()
-    data = json.loads(resp.data.decode('utf-8'))['data'][0]
-    access_token, refresh_token = data['access_token'], data['refresh_token']
-
-    #: No authorization header
-    resp = client.get('/api/v2/users/1/interventions')
-    assert resp.status_code == 401
-   
-    #: Initial Request- no data
-    user_id = User.get_last_inserted_id()
-    uri = '/api/v2/users/{}/interventions'.format(user_id)
-    resp = client.get(uri, headers=make_token_header(access_token))
-    assert resp.status_code == 200
-    data = json.loads(resp.data.decode('utf-8'))
-    assert not data['data']
-
-    #: create a record
-    resp = client.post('/api/v2/interventions', 
-                        data={'location': '-1.23, 36.5', 'comment':'crooked tendering processes'}, 
-                        headers=make_token_header(access_token))
-
-    #: Get user specific records
-    resp = client.get(uri, headers=make_token_header(access_token))
-    assert resp.status_code == 200
-    data = json.loads(resp.data.decode('utf-8'))
-    assert data['data']
