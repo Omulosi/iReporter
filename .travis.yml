@@ -7,7 +7,7 @@ env:
 services:
     - postgresql
 before_script:
-        - psql -c 'create database testdb;' -U postgres
+        - psql -c 'create database ireporterdb;' -U postgres
         - psql -c "create user jp with password 'cavier';" -U postgres
         - flask init-db
 install:
