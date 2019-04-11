@@ -8,7 +8,7 @@
 
 import json
 from app import create_app
-from instance.config import TestConfig, Config
+from config import TestConfig
 import pytest
 from app.helpers import make_token_header
 from app.models import User, Model, Record
@@ -22,6 +22,8 @@ def app():
    
     with app.app_context():
 
+        db.init_db()
+        
         USER = User()
         USER.add(username='test', password='test-password')
        

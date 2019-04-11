@@ -10,7 +10,7 @@ import click
 from flask import current_app, g
 from flask.cli import with_appcontext
 import psycopg2
-from instance.config import Config
+from config import Config
 
 
 def get_db():

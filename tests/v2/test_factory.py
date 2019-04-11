@@ -6,7 +6,7 @@
 '''
 
 from app import create_app
-from instance.config import TestConfig
+from config import TestConfig
 
 def test_config():
     assert not create_app().testing

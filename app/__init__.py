@@ -8,7 +8,7 @@
 from flask import Flask
 from flask_jwt_extended import JWTManager
 from flask_mail import Mail
-from instance.config import Config
+from config import Config
 from app.db import db
 
 jwt = JWTManager()
