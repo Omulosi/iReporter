@@ -1,6 +1,6 @@
 
 '''
-    config
+    instance.config
     ------------------
     This module provides default configuration values.
 '''
