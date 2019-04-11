@@ -24,24 +24,9 @@ class Config:
     JWT_BLACKLIST_ENABLED = True
     JWT_BLACKLIST_TOKEN_CHECKS = ['access', 'refresh']
     PROPAGATE_EXCEPTIONS = True
-
+    
     #: Database url
     DATABASE = os.getenv('DB_URL')
-
-class DevelopmentConfig(Config):
-    '''
-    Development configuration values
-    '''
-    #: settigs for using a local python smtpd mail server
-    MAIL_SERVER = 'localhost'
-    MAIL_PORT = 8025
-    MAIL_USERNAME = 'no-reply@' + MAIL_SERVER
-    JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=24)
-
-class ProductionConfig(Config):
-    '''
-    Production configuration values
-    '''
 
     #: Mail server configuration values
     MAIL_SERVER=os.environ.get('MAIL_SERVER')

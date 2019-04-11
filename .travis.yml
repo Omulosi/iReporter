@@ -3,13 +3,12 @@ python:
         - "3.5.2"
 env:
   global:
-    - CC_TEST_REPORTER_ID=976f94313dd1630a35e7b655cd59d9aae1f33752d05b65d928e6d140f21e55ee
+    - CC_TEST_REPORTER_ID=$TEST_REPORTER_ID
 services:
     - postgresql
 before_script:
-        - psql -c 'create database ireporterdb;' -U postgres
+        - psql -c 'create database testdb;' -U postgres
         - psql -c "create user jp with password 'cavier';" -U postgres
-        - flask init-db
 install:
         - pip install -r requirements.txt
 script:
