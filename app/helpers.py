@@ -10,6 +10,10 @@ Implements various helpers
 from flask_mail import Message
 from app import mail
 from flask import jsonify
+from sendgrid.helpers.mail import Mail
+from threading import Thread
+from flask import current_app
+
 
 def make_token_header(token):
     """
@@ -18,13 +22,13 @@ def make_token_header(token):
     """
     return {'Authorization': 'Bearer {}'.format(token)}
 
-def send_email(subject, sender, recipients, body):
-    """
-    A function for sending an email
-    """
-    msg = Message(subject=subject, sender=sender, recipients=recipients)
-    msg.body = body
-    mail.send(msg)
+# def send_email(subject, sender, recipients, body):
+#     """
+#     A function for sending an email
+#     """
+#     msg = Message(subject=subject, sender=sender, recipients=recipients)
+#     msg.body = body
+#     mail.send(msg)
 
 def raise_error(status_code, message):
     """
@@ -34,3 +38,20 @@ def raise_error(status_code, message):
                         "error": message})
     response.status_code = status_code
     return response
+
+def send_async_email(app, msg):
+    with app.app_context():
+        mail.send(msg)
+
+def send_email(subject, sender, recipients, body):
+    """
+    A function for sending an email using sendgrid API
+    """
+    message = Mail(
+        from_email=sender,
+        to_emails=recipients,
+        subject=subject,
+        html_content='<p>{}</p>'.format(body))
+    Thread(target=send_async_email,
+        args=(current_app._get_current_object(), message)).start()
+    mail.send(message)

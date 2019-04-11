@@ -10,9 +10,11 @@ from flask_jwt_extended import JWTManager
 from flask_mail import Mail
 from config import Config
 from app.db import db
+from sendgrid import SendGridAPIClient
 
 jwt = JWTManager()
-mail = Mail()
+#mail = Mail()
+mail = SendGridAPIClient(Config.SENDGRID_API_KEY)
 
 def create_app(config_class=Config):
     """
@@ -23,7 +25,7 @@ def create_app(config_class=Config):
     app.config.from_object(config_class)
 
     jwt.init_app(app)
-    mail.init_app(app) 
+    #mail.init_app(app) 
     db.init_app(app)
 
     from app.api.v1 import bp as api_v1

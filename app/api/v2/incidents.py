@@ -219,18 +219,21 @@ class UpdateIncident(Resource):
         #: All relevant checks have passed by this stage, update appropriate field
         RECORD.update(_id, field, new_field_value)
 
+        msg = incident_type + " record's " + field + " updated to " + new_field_value
+
+        if field == 'status':
+            #: Get user who created the record
+            record_creator = USER.by_id(createdby)[0]
+
+            user_email = record_creator.get('email')
+            if user_email:
+                send_email(subject="Status Update",
+                           sender=current_app.config.get('ADMIN_EMAIL'),
+                           recipients=user_email,
+                           body=msg)
         output = {}
-        msg = "Updated " + incident_type + " record's " + field
         output['status'] = 200
         output['data'] = [{"id": _id, "message": msg}]
 
-        if field == 'status':
-            user_email = user.get('email')
-            if user_email:
-                msg = msg + ' to ' + new_field_value
-                send_email(subject="Status Update",
-                           sender=current_app.config.get('MAIL_USERNAME'),
-                           recipients=[user_email],
-                           body=msg)
                 
         return output

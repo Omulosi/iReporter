@@ -5,4 +5,5 @@ venv
 *swp
 .env
 .vscode
-instance
+instancesendgrid.env
+sendgrid.env
