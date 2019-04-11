@@ -12,7 +12,6 @@ from flask_jwt_extended import jwt_required, get_jwt_identity, fresh_jwt_require
 from app.utils import (valid_location, valid_comment, valid_status,
                            update_createdon, raise_error)
 from app.helpers import send_email
-from . import api_bp
 from app.models import Record, User
 
 

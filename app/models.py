@@ -227,27 +227,16 @@ class User(Model):
 
         
 
-    def put(self):
+    def all(self):
         """
-        Store a user in the database
+        Return a list of all users in the database
         """
-        query = """insert into users
-                (username, password_hash, email, createdOn, firstname, lastname, othernames,
-                phoneNumber, isAdmin)
-                values (%(username)s, %(password_hash)s, %(email)s, %(registered)s,
-                %(firstname)s, %(lastname)s, %(othernames)s, %(phoneNumber)s, %(isAdmin)s);"""
-        self.query(query, {'username': self.username,
-                           'password_hash': generate_password_hash(self.password),
-                           'email':  self.email,
-                           'registered': self.registered,
-                           'firstname': self.firstname,
-                           'lastname': self.lastname,
-                           'othernames': self.othernames,
-                           'phoneNumber': self.phone_number,
-                           'isadmin': self.isadmin
-                          })
+        query = """select
+                id, username, email, firstname, lastname, othernames,
+                phoneNumber, isAdmin from users;"""
+        self.query(query)
 
-        self.commit()
+        return self.fetchall()
 
     @property
     def serialize(self):

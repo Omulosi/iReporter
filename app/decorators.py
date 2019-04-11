@@ -10,7 +10,7 @@ Custom decorators
 from functools import wraps
 from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
 from app.models import User
-from app.api.v2.common.utils import raise_error
+from app.utils import raise_error
 
 def admin_required(fn):
     """
@@ -23,7 +23,7 @@ def admin_required(fn):
         verify_jwt_in_request()
         user_name = get_jwt_identity()
         user = USER.filter_by('username', user_name)
-        if not user.get('isadmin'):
+        if not user[0].get('isadmin'):
             return raise_error(403, 'Only admins can access this endpoint')
         return fn(*args, **kwargs)
     return wrapper

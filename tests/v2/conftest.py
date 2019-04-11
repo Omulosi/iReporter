@@ -29,9 +29,7 @@ def app():
        
         yield app
 
-        db.clear_tables()
-
-    
+        db.clear_tables() 
 
 @pytest.fixture
 def client(app):
