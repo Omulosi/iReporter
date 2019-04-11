@@ -1,6 +1,7 @@
-DROP TABLE IF EXISTS users;
+
 DROP TABLE IF EXISTS records;
 DROP TABLE IF EXISTS blacklist;
+DROP TABLE IF EXISTS users;
 
 create table records (
       id serial primary key,
