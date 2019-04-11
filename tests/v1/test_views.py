@@ -6,29 +6,45 @@
 
 """
 from app import create_app
-from instance.config import TestConfig
+from config import TestConfig
 from app.api.v1.models import Record as db
 from datetime import datetime
 import pytest
 import json
 
+# @pytest.fixture
+# def client():
+#     """
+#     Configures the application for testing.
+#     This fixture is called for each individual test.
+#     """
+#     app = create_app(TestConfig)
+#     client = app.test_client()
+
+#     # Create an application context before running the tests
+#     ctx = app.app_context()
+#     ctx.push()
+
+#     yield client
+
+#     db.clear_all()
+#     ctx.pop()
+
 @pytest.fixture
-def client():
-    """
-    Configures the application for testing.
-    This fixture is called for each individual test.
-    """
+def app():
+
     app = create_app(TestConfig)
-    client = app.test_client()
-
-    # Create an application context before running the tests
-    ctx = app.app_context()
-    ctx.push()
-
-    yield client
+   
+    with app.app_context():
+       
+        yield app
 
     db.clear_all()
-    ctx.pop()
+
+
+@pytest.fixture
+def client(app):
+    return app.test_client()
 
 user_input = {'location': '-1.23, 36.5', 'comment':'crooked tendering processes'}
 

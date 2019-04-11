@@ -9,21 +9,10 @@ services:
 before_script:
         - psql -c 'create database testdb;' -U postgres
         - psql -c "create user jp with password 'cavier';" -U postgres
-        - flask db create-all
 install:
-        - pip install flask
-        - pip install pytest
-        - pip install pytest-cov
-        - pip install flask_restful
-        - pip install coveralls
-        - pip install codecov
-        - pip install python-dotenv
-        - pip install psycopg2-binary
-        - pip install flask_jwt_extended
-        - pip install flask-mail
+        - pip install -r requirements.txt
 script:
-        - pytest --cov=./app/tests/v2
+        - pytest
 after_success:
-        - codecov
         - coveralls
         - codeclimate-test-reporter

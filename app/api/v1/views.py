@@ -8,7 +8,7 @@
 from flask_restful import Resource, reqparse, url_for
 from . import api_bp
 from .models import Record
-from app.api.utils import valid_location, valid_comment, can_update, raise_error
+from app.utils import valid_location, valid_comment, can_update, raise_error
 
 #
 # Input validation functions
@@ -102,8 +102,8 @@ class UpdateSingleRedflag(Resource):
     def __init__(self):
         self.location_parser = reqparse.RequestParser()
         self.comment_parser = reqparse.RequestParser()
-        self.location_parser.add_argument('location', type=str)
-        self.comment_parser.add_argument('comment', type=str)
+        self.location_parser.add_argument('location', type=str, required=True)
+        self.comment_parser.add_argument('comment', type=str, required=True)
         super(UpdateSingleRedflag, self).__init__()
 
     def patch(self, _id, field):
