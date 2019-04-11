@@ -22,80 +22,18 @@ def get_db():
 
     return g.db
 
-
 def close_db(e=None):
     db = g.pop('db', None)
 
     if db is not None:
         db.close()
 
-
-def create_records():
-    
-    query = """
-            create table if not exists records (
-            id serial primary key,
-            type varchar(50) not null,
-            comment varchar(140) not null,
-            location varchar(30) not null,
-            status varchar(50) not null,
-            createdon timestamp with time zone not null default now(),
-            images varchar(120)[] not null,
-            videos varchar(120)[] not null,
-            uri varchar(140),
-            createdby integer not null,
-            user_id integer references users(id) on delete cascade not null
-            );
-        """
-
-    db = get_db()
-    with db:
-        with db.cursor() as cursor:
-            cursor.execute(query)
-
-def create_users():
-
-    query = """
-            create table if not exists users (
-            id serial primary key,
-            username varchar(80) not null,
-            email varchar(100) not null,
-            createdOn timestamp with time zone not null,
-            firstname varchar(100) not null,
-            lastname varchar(100) not null,
-            othernames varchar(100) not null,
-            phoneNumber varchar(100) not null,
-            isAdmin boolean not null,
-            password_hash varchar(100) not null
-            );"""
-
-    db = get_db()
-    with db:
-        with db.cursor() as cursor:
-            cursor.execute(query)
-
-def create_blacklist():
-    query = """
-            create table if not exists blacklist (
-            id serial primary key,
-            jti varchar(140) not null
-            );"""
-
-    db = get_db()
-    with db:
-        with db.cursor() as cursor:
-            cursor.execute(query)
-
 def init_db():
-    # db = get_db()
+    db = get_db()
 
-    # with current_app.open_resource('db/schema.sql') as f:
-    #     with db.cursor() as cursor:
-    #         cursor.execute(f.read().decode('utf8'))
-
-    create_records()
-    create_users()
-    create_blacklist()
+    with current_app.open_resource('db/schema.sql') as f:
+        with db.cursor() as cursor:
+            cursor.execute(f.read().decode('utf8'))
 
 
 def clear_tables():
