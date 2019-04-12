@@ -6,8 +6,6 @@ Implements various helpers
 
 """
 
-
-from flask_mail import Message
 from app import mail
 from flask import jsonify
 from sendgrid.helpers.mail import Mail
@@ -21,14 +19,6 @@ def make_token_header(token):
     token
     """
     return {'Authorization': 'Bearer {}'.format(token)}
-
-# def send_email(subject, sender, recipients, body):
-#     """
-#     A function for sending an email
-#     """
-#     msg = Message(subject=subject, sender=sender, recipients=recipients)
-#     msg.body = body
-#     mail.send(msg)
 
 def raise_error(status_code, message):
     """

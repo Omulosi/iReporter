@@ -150,6 +150,4 @@ for more information, checkout the documentation
 
 # Documentation
 
-[view v1 documentation of the API](https://ireporter3.docs.apiary.io/#reference)
-
-[view v2 documentation of the API]((https://ireporterv22.docs.apiary.io/))
+[view the documentation of the API here]((https://ireporterv22.docs.apiary.io/)
