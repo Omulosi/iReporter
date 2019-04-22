@@ -32,4 +32,11 @@ def create_app(config_class=Config):
     from app.api.v2 import bp as api_v2
     app.register_blueprint(api_v2, url_prefix='/api/v2')
 
+    @app.route('/')
+    def root():
+        """
+        Redirect the root url to the documentation of the API
+        """
+        return redirect('https://ireporter3.docs.apiary.io/#reference')
+
     return app
