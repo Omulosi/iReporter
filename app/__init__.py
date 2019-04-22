@@ -5,7 +5,7 @@
     creating and configuring a flask app. 
 '''
 
-from flask import Flask
+from flask import Flask, redirect
 from flask_jwt_extended import JWTManager
 from flask_mail import Mail
 from config import Config
