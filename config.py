@@ -26,7 +26,7 @@ class Config:
     PROPAGATE_EXCEPTIONS = True
     
     #: Database url
-    DATABASE = os.getenv('DB_URL')
+    DATABASE = os.environ.get('DATABASE_URL')
 
     #: Mail server configuration values
     MAIL_SERVER=os.environ.get('MAIL_SERVER')
