@@ -17,7 +17,7 @@ def get_db():
     
     if 'db' not in g:
         g.db = psycopg2.connect(
-                current_app.config['DATABASE']
+                current_app.config['DATABASE_URL']
                 )
 
     return g.db
